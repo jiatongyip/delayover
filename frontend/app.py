@@ -36,6 +36,27 @@ def get_distance(orig, dest):
     (airport_pairs.dest_airport_code == dest)]['distance_grp'].values[0]
     return dist
 
+def gen_line_plots(dep_df, arr_df, col_list):
+        for (col, val) in col_list:
+            dep_df = dep_df[dep_df[col] == val]
+            arr_df = arr_df[arr_df[col] == val]
+
+        dep_df['yr_mon'] = dep_df.yr.astype(str) + "-" + dep_df.mon.map("{:02}".format)
+        dep_df['type'] = "departure"
+        
+        arr_df['yr_mon'] = arr_df.yr.astype(str) + "-" + arr_df.mon.map("{:02}".format)
+        arr_df['type'] = "arrival"
+        
+        df = pd.concat([dep_df[["yr_mon", "mean", "type"]], 
+                        arr_df[["yr_mon", "mean", "type"]]])
+        line_plot = px.line(
+            df, x = "yr_mon", y = "mean", 
+            color = "type", markers = True,
+            labels = {'yr_mon': "time", 'mean': 'Mean delay (mins)'})
+
+        return line_plot
+
+# app
 app.layout = html.Div([
     html.Div([html.H1('Flight Delay'),
     html.Img(src=app.get_asset_url('plane.svg'))
@@ -231,22 +252,7 @@ def update_orig_dest_plot(orig, dest):
         line_plot = px.line()
     line_title = ""
     if all([orig, dest]):
-        dep_subset = orig_dest_dep_df[(orig_dest_dep_df.origin_airport_code == orig) &
-        (orig_dest_dep_df.dest_airport_code == dest)]
-        dep_subset['yr_mon'] = dep_subset.yr.astype(str) + "-" + dep_subset.mon.map("{:02}".format)
-        dep_subset['type'] = "departure"
-        
-        arr_subset = orig_dest_arr_df[(orig_dest_arr_df.origin_airport_code == orig) &
-        (orig_dest_arr_df.dest_airport_code == dest)]
-        arr_subset['yr_mon'] = arr_subset.yr.astype(str) + "-" + arr_subset.mon.map("{:02}".format)
-        arr_subset['type'] = "arrival"
-        
-        df = pd.concat([dep_subset[["yr_mon", "mean", "type"]], 
-                        arr_subset[["yr_mon", "mean", "type"]]])
-        line_plot = px.line(
-            df, x = "yr_mon", y = "mean", 
-            color = "type", markers = True,
-            labels = {'yr_mon': "time", 'mean': 'Mean delay (mins)'})
+        line_plot = gen_line_plots(orig_dest_dep_df, orig_dest_arr_df, [("origin_airport_code", orig), ("dest_airport_code", dest)])
         line_title = "Let's look at the delays for flights from " + orig + " to " + dest + "!"
 
     return line_plot, line_title
@@ -262,22 +268,10 @@ def update_carrier_plot(carrier):
         line_plot = px.line()
     except ValueError:
         line_plot = px.line()
+
     line_title = ""
     if carrier:
-        dep_subset = carrier_dep_df[carrier_dep_df.u_carrier == carrier]
-        dep_subset['yr_mon'] = dep_subset.yr.astype(str) + "-" + dep_subset.mon.map("{:02}".format)
-        dep_subset['type'] = "departure"
-        
-        arr_subset = carrier_arr_df[carrier_arr_df.u_carrier == carrier]
-        arr_subset['yr_mon'] = arr_subset.yr.astype(str) + "-" + arr_subset.mon.map("{:02}".format)
-        arr_subset['type'] = "arrival"
-        
-        df = pd.concat([dep_subset[["yr_mon", "mean", "type"]], 
-                        arr_subset[["yr_mon", "mean", "type"]]])
-        line_plot = px.line(
-            df, x = "yr_mon", y = "mean", 
-            color = "type", markers = True,
-            labels = {'yr_mon': "time", 'mean': 'Mean delay (mins)'})
+        line_plot = gen_line_plots(carrier_dep_df, carrier_arr_df, [("u_carrier", carrier)])
         line_title = "Let's look at the delays for flights by " + carrier_dict[carrier] + "!"
 
     return line_plot, line_title
@@ -297,20 +291,7 @@ def update_deph_plot(time_slider):
     if time_slider:
         dep, arr = time_slider
         dep = dep%24
-        dep_subset = deph_dep_df[deph_dep_df.dep_hour == dep]
-        dep_subset['yr_mon'] = dep_subset.yr.astype(str) + "-" + dep_subset.mon.map("{:02}".format)
-        dep_subset['type'] = "departure"
-        
-        arr_subset = deph_arr_df[deph_arr_df.dep_hour == dep]
-        arr_subset['yr_mon'] = arr_subset.yr.astype(str) + "-" + arr_subset.mon.map("{:02}".format)
-        arr_subset['type'] = "arrival"
-        
-        df = pd.concat([dep_subset[["yr_mon", "mean", "type"]], 
-                        arr_subset[["yr_mon", "mean", "type"]]])
-        line_plot = px.line(
-            df, x = "yr_mon", y = "mean", 
-            color = "type", markers = True,
-            labels = {'yr_mon': "time", 'mean': 'Mean delay (mins)'})
+        line_plot =  gen_line_plots(deph_dep_df, deph_arr_df, [("dep_hour", dep)])
         line_title = "Let's look at the delays for flights departing at " + "{:02}".format(dep) + "00 hours!"
 
     return line_plot, line_title
@@ -330,20 +311,7 @@ def update_arrh_plot(time_slider):
     if time_slider:
         dep, arr = time_slider
         arr = arr%24
-        dep_subset = arrh_dep_df[arrh_dep_df.arr_hour == arr]
-        dep_subset['yr_mon'] = dep_subset.yr.astype(str) + "-" + dep_subset.mon.map("{:02}".format)
-        dep_subset['type'] = "departure"
-        
-        arr_subset = arrh_arr_df[arrh_arr_df.arr_hour == arr]
-        arr_subset['yr_mon'] = arr_subset.yr.astype(str) + "-" + arr_subset.mon.map("{:02}".format)
-        arr_subset['type'] = "arrival"
-        
-        df = pd.concat([dep_subset[["yr_mon", "mean", "type"]], 
-                        arr_subset[["yr_mon", "mean", "type"]]])
-        line_plot = px.line(
-            df, x = "yr_mon", y = "mean", 
-            color = "type", markers = True,
-            labels = {'yr_mon': "time", 'mean': 'Mean delay (mins)'})
+        line_plot = gen_line_plots(arrh_dep_df, arrh_arr_df, [("arr_hour", arr)])
         line_title = "Let's look at the delays for flights arriving at " + "{:02}".format(arr) + "00 hours!"
 
     return line_plot, line_title    
