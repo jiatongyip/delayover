@@ -347,7 +347,7 @@ def update_orig_dest_pie(orig, dest):
     if all([orig, dest]):
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(orig_dest_dep_df, orig_dest_arr_df, 
                                                                               [("origin_airport_code", orig), ("dest_airport_code", dest)])
-        return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+    return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
 
 @app.callback(
     Output('carrier_line','figure'),
@@ -388,7 +388,7 @@ def update_carrier_pie(carrier):
         bar_plot_arr = px.bar()        
     if carrier:
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(carrier_dep_df, carrier_arr_df, [("u_carrier", carrier)])
-        return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+    return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
 
 @app.callback(
     Output('deph_line','figure'),
@@ -432,7 +432,7 @@ def update_deph_pie(time_slider):
         dep, arr = time_slider
         dep = dep%24
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(deph_dep_df, deph_arr_df, [("dep_hour", dep)])
-        return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+    return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
 
 @app.callback(
     Output('arrh_line','figure'),
@@ -476,7 +476,7 @@ def update_arrh_pie(time_slider):
         dep, arr = time_slider
         arr = arr%24        
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(arrh_dep_df, arrh_arr_df, [("arr_hour", arr)])
-        return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+    return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
 
 if __name__ == '__main__':
     app.run_server(debug=True)
