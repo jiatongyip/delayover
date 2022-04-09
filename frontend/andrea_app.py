@@ -8,8 +8,8 @@ import pandas as pd
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash import Dash, html, dcc
-
 import requests
+
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
 
 app = Dash(__name__)
@@ -36,7 +36,6 @@ def get_distance(orig, dest):
     (airport_pairs.dest_airport_code == dest)]['distance_grp'].values[0]
     return dist
 
-
 app.layout = html.Div([
     html.Div([html.H1('Flight Delay'),
     html.Img(src=app.get_asset_url('plane.svg'))
@@ -48,7 +47,6 @@ app.layout = html.Div([
                 label='Predicted Delay',
                 children=html.Div(
                     children=[
-                        # html.H1("flight delay"),
                         html.Div(html.H2(id='pred'),style={"font-size":"16px","padding-top":"10px"}),
                         html.Div([
                                 html.Div(html.H3("Select Day of Week:"),style={"padding-right":"5px"}),
