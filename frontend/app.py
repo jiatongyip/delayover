@@ -5,15 +5,15 @@ from pydoc import classname
 from dash import Dash, dcc
 import plotly.express as px
 import pandas as pd
+from datetime import date
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash import Dash, html, dcc
 import requests
 
-external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
-
 app = Dash(__name__)
 flask_url = 'http://127.0.0.1:5000/prediction'
+external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
 
 #reading the data needed
 airport_pairs = pd.read_csv("data/airport_pairs.csv")
@@ -36,6 +36,13 @@ def get_distance(orig, dest):
     dist = airport_pairs[(airport_pairs.origin_airport_code == orig) &
     (airport_pairs.dest_airport_code == dest)]['distance_grp'].values[0]
     return dist
+
+def get_yr_mon_dow(date_value): 
+    date_object = date.fromisoformat(date_value)
+    yr = date_object.year
+    mon = date_object.month
+    dayofweek = date_object.weekday()
+    return yr, mon, dayofweek
 
 def gen_line_plots(dep_df, arr_df, col_list):
         for (col, val) in col_list:
@@ -62,7 +69,7 @@ def generate_pie_bar(dep_df, arr_df, col_list):
         for (col, val) in col_list:
             dep_df = dep_df[dep_df[col] == val]
             arr_df = arr_df[arr_df[col] == val]
-        
+
         # generate delay proportion for departure in 2012
         dep_yr_prop = sum(dep_df['count'] * dep_df['prop']) / sum(dep_df['count']) * 100
         pie_plot_dep = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [dep_yr_prop, 100 - dep_yr_prop]}),
@@ -78,7 +85,6 @@ def generate_pie_bar(dep_df, arr_df, col_list):
             title = "% of delay in 2012 arrivals",
         )
         
-
         dep_df["delayed"] = dep_df["prop"] * 100
         dep_df["not delayed"] = 100 - dep_df["delayed"]
         arr_df["delayed"] = arr_df["prop"] * 100
@@ -97,7 +103,6 @@ def generate_pie_bar(dep_df, arr_df, col_list):
                     "tickvals": list(range(1, 13))},
             legend={'title_text':'Status'}
         )
-
         return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
 
 
@@ -115,25 +120,16 @@ app.layout = html.Div([
                     children=[
                         html.Div(html.H2(id='pred'),style={"font-size":"16px","padding-top":"10px"}),
                         html.Div([
-                                html.Div(html.H3("Select Day of Week:"),style={"padding-right":"5px"}),
-                                html.Div( dcc.RadioItems(id='dayofweek',
-                                options=options_dict['dayofweek'],
-                                # placeholder="Select day of week"
-                                value = 1
-                                ),style={"padding":"10px 0"}),
-    
-                                html.Div(html.H3("Select Year:"),style={"padding-left":"20px","padding-right":"5px"}),          
-                                html.Div(dcc.Dropdown(id='year',
-                                options=options_dict['year'],
-                                value = 2013
-                                ),style={"padding":"10px 20px","width":"100px"}),
-
-                                html.Div( html.H3("Select Month:"),style={"padding-left":"20px","padding-right":"5px"}),
-                                html.Div( dcc.Dropdown(id='month',
-                                options=options_dict['month'],
-                                value = 1
-                                 ),style={"padding":"10px 20px","width":"100px"})
-
+                                html.Div(html.H3("Select Date:"),style={"padding-right":"5px"}),
+                                dcc.DatePickerSingle(
+                                        id='date_picker',
+                                        min_date_allowed=date(2013, 1, 1),
+                                        max_date_allowed=date(2015, 12, 31),
+                                        initial_visible_month=date(2014, 1, 1),
+                                        date=date(2014, 1, 1),
+                                        month_format = "MMMM YYYY",
+                                        display_format = "DD-MMM-YYYY"
+                                    ),
                         ],style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
                         html.H3("Select Departure and Arrival time:"),  
                         dcc.RangeSlider(
@@ -233,12 +229,7 @@ app.layout = html.Div([
 @app.callback(
     Output(component_id='pred',
     component_property='children'),
-    Input(component_id='dayofweek',
-    component_property='value'),
-    Input(component_id='year',
-    component_property='value'),
-    Input(component_id='month',
-    component_property='value'),
+    Input('date_picker', 'date'),
     [Input('time_slider', 'value')],
     Input(component_id='orig',
     component_property='value'),
@@ -247,10 +238,11 @@ app.layout = html.Div([
     Input(component_id='carrier',
     component_property='value')
 )
-def get_pred(dayofweek, year, month, time_slider, orig, dest, carrier):
+def get_pred(date_picker, time_slider, orig, dest, carrier):
     arr_delay = "unknown"
     dep_delay = "unknown"
-    if all([dayofweek, year, month, time_slider, orig, dest, carrier]):
+    if all([date_picker, time_slider, orig, dest, carrier]):
+        year, month, dayofweek = get_yr_mon_dow(date_picker)
         dep , arr = time_slider
         dep = dep%24
         arr = arr%24
@@ -266,6 +258,7 @@ def get_pred(dayofweek, year, month, time_slider, orig, dest, carrier):
     return ["The departure will delay by " + dep_delay + " mins" , html.Br(),
     "The arrival will delay by " + arr_delay + " mins"
     ]
+
 
 # callback to display time selection
 @app.callback(
