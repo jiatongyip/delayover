@@ -77,7 +77,8 @@ app.layout = html.Div([
                         dcc.Dropdown(id='dest', value = "ABE"),  
                         html.H3("Select carrier:"),            
                         dcc.Dropdown(id='carrier',
-                                    options=options_dict['carrier'])
+                                    options=options_dict['carrier'],
+                                    value = "AA")
                     ]
                 )
             ),

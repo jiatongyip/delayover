@@ -82,15 +82,21 @@ app.layout = html.Div([
                         html.Div(id='time_slider_output'),
 
                         html.Div(children=[
-                            html.Div(html.H3("Select Origin:"),style={"padding-right":"5px"}),
-                            html.Div(dcc.Dropdown(id='orig', value = "ATL"),style={"padding":"10px 20px","width":"100px"}),
+                            html.Div(html.H3("Select Origin:"),
+                            style={"padding-right":"5px"}),
+                            html.Div(dcc.Dropdown(id='orig', value = "ATL"),
+                            style={"padding":"10px 20px","width":"100px"}),
 
-                            html.Div( html.H3("Select Destination:"),style={"padding-left":"20px","padding-right":"5px"} ),
-                            html.Div(dcc.Dropdown(id='dest', value = "ABE"),style={"padding":"10px 20px","width":"100px"}),
+                            html.Div(html.H3("Select Destination:"),
+                            style={"padding-left":"20px","padding-right":"5px"} ),
+                            html.Div(dcc.Dropdown(id='dest', value = "ABE"),
+                            style={"padding":"10px 20px","width":"100px"}),
 
-                            html.Div( html.H3("Select Carrier:"),style={"padding-left":"20px","padding-right":"5px"} ),
-                            html.Div( dcc.Dropdown(id='carrier',
-                                    options=options_dict['carrier']),style={"padding":"10px 20px","width":"200px"})
+                            html.Div(html.H3("Select Carrier:"),
+                            style={"padding-left":"20px","padding-right":"5px"}),
+                            html.Div(dcc.Dropdown(id='carrier', value = 'AA',
+                                    options=options_dict['carrier']),
+                                    style={"padding":"10px 20px","width":"200px"})
 
 
                         ],style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
