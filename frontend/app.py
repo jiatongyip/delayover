@@ -48,7 +48,7 @@ app.layout = html.Div(
                 label='Predicted Delay',
                 children=html.Div(
                     children=[
-                        html.Div(html.H2(id='pred'), style={"font-size":"16px","padding-top":"10px"}),
+                        html.Div(html.H2(id='pred'), style={"font-size":"16px","padding-top":"10px","text-align":"center"}),
                         html.Div(
                             [html.Div(html.H2("Select Date:"), style={"padding-right":"5px"}),
                             html.Div(
