@@ -169,6 +169,7 @@ app.layout = html.Div(
 def get_pred(date_picker, time_slider, orig, dest, carrier):
     arr_delay = "unknown"
     dep_delay = "unknown"
+    return_line = "Please fill in all the fields below."
     if all([date_picker, time_slider, orig, dest, carrier]):
         year, month, dayofweek = get_yr_mon_dow(date_picker)
         dep , arr = time_slider
@@ -180,12 +181,14 @@ def get_pred(date_picker, time_slider, orig, dest, carrier):
         'origin_airport_code':orig, 'dest_airport_code': dest, 
         'distance_grp':dist}
 
-        delay = requests.get(flask_url, params=param1).json()        
-        arr_delay = delay['arr']
-        dep_delay = delay['dep']
-
-    return ["The departure will delay by " + dep_delay + " mins" , html.Br(),
-    "The arrival will delay by " + arr_delay + " mins"]
+        delay = requests.get(flask_url, params=param1).json()
+        
+        arr_delay = "{:.3f}".format(max(float(delay['arr']), 0))
+        dep_delay = "{:.3f}".format(max(float(delay['dep']), 0))
+        
+        return_line = ["The departure will delay by " + dep_delay + " mins" , html.Br(),
+        "The arrival will delay by " + arr_delay + " mins"]
+    return return_line
 
 # callback to display time selection
 @app.callback(
