@@ -3,11 +3,36 @@
 .custom-tabs-container {
     width: 100%;
 }
+.icon1{
+    background: url("airport.svg") no-repeat;
+    background-position: 15%;
+}
+.icon2{
+    background: url("origin_dest.svg") no-repeat;
+    background-position: 15%;
 
+}
+.icon3{
+    background: url("airline.svg") no-repeat;
+    background-position: 15%;
+
+}
+.icon4{
+    background: url("departure.svg") no-repeat;
+    background-position: 12%;
+
+}
+
+.icon5{
+    background: url("arrival.svg") no-repeat;
+    background-position: 10%;
+
+}
 .custom-tab {
+    
     font-size: 18px;
     font-weight: 500;
-    font-family: 'Poppins,sans-serif';
+    font-family: 'Poppsins,sans-serif';
     border-top-left-radius: 5px;
     /* border-top-right-radius: 5px; */
     border-top: 3px solid transparent !important;
@@ -20,7 +45,7 @@
     justify-content: center;
 }
 .custom-tab:hover{
-    background-color: #DDDDDD;
+    background-color:#DDDDDD;
     opacity: 0.9;
     transition: 0.1s ease-in-out;
 }
