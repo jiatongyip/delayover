@@ -214,8 +214,6 @@ app.layout = html.Div(
     component_property='value')
 )
 def get_pred(date_picker, time_slider, orig, dest, carrier):
-    arr_delay = "unknown"
-    dep_delay = "unknown"
     return_line = "Please fill in all the fields below."
     if all([date_picker, time_slider, orig, dest, carrier]):
         year, month, dayofweek = get_yr_mon_dow(date_picker)
@@ -229,12 +227,17 @@ def get_pred(date_picker, time_slider, orig, dest, carrier):
         'distance_grp':dist}
 
         delay = requests.get(flask_url, params=param1).json()
-        
-        arr_delay = "{:.3f}".format(max(float(delay['arr']), 0))
-        dep_delay = "{:.3f}".format(max(float(delay['dep']), 0))
-        
-        return_line = ["The departure will delay by " + dep_delay + " mins" , html.Br(),
-        "The arrival will delay by " + arr_delay + " mins"]
+        if max(float(delay['arr']), 0) == 0:
+            arr_return_line = "The arrival will not delay."
+        else: 
+            arr_return_line = "The arrival will delay by " + "{:.3f}".format(float(delay['arr'])) + " minutes."
+        if max(float(delay['dep']), 0) == 0:
+            dep_return_line = "The departure will not delay."
+        else: 
+            dep_return_line = "The departure will delay by " + "{:.3f}".format(float(delay['dep'])) + " minutes."            
+
+        "{:.3f}".format
+        return_line = [dep_return_line , html.Br(), arr_return_line]
     return return_line
 
 # callback to display time selection
