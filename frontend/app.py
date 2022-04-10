@@ -297,6 +297,12 @@ def update_orig_dest_pie(orig, dest):
                                                                               [("origin_airport_code", orig), ("dest_airport_code", dest)])
     return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
 
+@app.callback(
+    Output('orig_dest_hist_delay_dep','figure'),
+    Output('orig_dest_hist_delay_arr','figure'),
+    Input('orig', 'value'),
+    Input('dest', 'value')
+    )
 def update_orig_dest_hist_delay_type(orig, dest):
     try:
         hist_dep = px.histogram()
