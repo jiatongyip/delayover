@@ -83,3 +83,35 @@ def generate_pie_bar(dep_df, arr_df, col_list):
                 legend={'title_text':'Status'}
             )
         return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+
+def update_delay_type(dep_df, arr_df, col_list):
+        for (col, val) in col_list:
+            dep_df = dep_df[dep_df[col] == val]
+            arr_df = arr_df[arr_df[col] == val]
+        # classify delay types for departure
+        dep_df['delay'] = pd.cut(
+            x = dep_df['mean'],
+            bins = [-1*math.inf, 0, 15, 45, math.inf],
+            labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
+        )
+        hist_dep = px.histogram(dep_df, 
+            x='yr', 
+            color='delay', 
+            barmode='group',
+            title = "of departure delays"
+        )
+        hist_dep.update_layout(xaxis_title="Year")
+        # classify delay types for arrival
+        arr_df['delay'] = pd.cut(
+            x = arr_df['mean'],
+            bins = [-1*math.inf, 0, 15, 45, math.inf],
+            labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
+        )
+        hist_arr = px.histogram(arr_df, 
+            x='yr', 
+            color='delay', 
+            barmode='group',
+            title = "of arrival delays"
+        )
+        hist_arr.update_layout(xaxis_title="Year")
+        return hist_dep, hist_arr
