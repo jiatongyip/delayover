@@ -10,6 +10,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash import Dash, html, dcc
 import requests
+import plotly.graph_objs as go
 from custom_functions import get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar
 
 app = Dash(__name__)
@@ -74,59 +75,61 @@ app.layout = html.Div(
                                 style={"padding":"10px 20px","width":"200px"})
                             ], style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}
                         ),
-                        html.Div(children=[], style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
-                        html.H2("Select Departure and Arrival time:"), 
+                        html.H2("Select Departure and Arrival time:",style={"font-family": 'Poppins,sans-serif',"padding-top":"10px"}), 
+                        html.Div(
                         dcc.RangeSlider(
                             min=0, max=48, step=1,
                             marks={0: '0000', 6: '0600', 12: '1200', 18: '1800', 24: '0000', 30: '0600', 36: '1200', 42: '1800', 48: '0000',},
                             value=[4, 24], allowCross = False, id='time_slider'
-                        ),
-                        html.Div(id='time_slider_output',style={"font-size":"17px","font-family": 'Poppins,sans-serif'}),
+                        ),style={"padding-top":"20px"}),
+                        html.Div(id='time_slider_output',style={"font-size":"17px","font-family": 'Poppins,sans-serif',"padding-top":"20px"}),
                     ], style={"font-family": 'Poppins,sans-serif'},
+
                 )
-            ),
+            ,),
             dcc.Tab(className="custom-tab icon2", selected_className='custom-tab--selected', label='Same src and dest',  children=html.Div(
                 [
-                    html.H1(id = "orig_dest_line_title", style={"text-align":"center","padding-top":"10px"}),
+                    html.H1(id = "orig_dest_line_title", style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
                     dcc.Graph(id='orig_dest_line'),
-                    html.H1(" Proportion of delays in 2012", style={"text-align":"center"}),
+                    html.H1(" Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                     html.Div([
                         dcc.Graph(id='orig_dest_pie_dep'),
                         dcc.Graph(id='orig_dest_pie_arr'),
-                    ], style={"display":"flex","width":"200px"}
+                    ], style={"display":"flex","align-items":"center","justify-content":"center"}
                     ),
-                    html.H1("Proportion of delays by months", style={"text-align":"center"}),
+                    html.H1("Proportion of delays by months", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                     html.Div([
                         dcc.Graph(id='orig_dest_bar_dep'),
                         dcc.Graph(id='orig_dest_bar_arr'),
-                    ], style={"display":"flex","width":"200px"})
+                    ], style={"display":"flex","align-items":"center","justify-content":"center"})
                 ]),
             ),
             dcc.Tab(className="custom-tab icon3", selected_className='custom-tab--selected', label='Same carrier', 
-            children=html.Div(
-                [html.Div(html.H1(id = "carrier_line_title"), style={"text-align":"center","padding-top":"10px"}),
+            children=html.Div([
+                html.Div(html.H1(id = "carrier_line_title"), style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
                 dcc.Graph(id='carrier_line'),
-                html.Div(html.H1("Proportion of delays in 2012"), style={"text-align":"center"}),
+                html.Div(html.H1("Proportion of delays in 2012"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div([
                     dcc.Graph(id='carrier_pie_dep'),
                     dcc.Graph(id='carrier_pie_arr'),
                 ], style={"display":"flex","justify-content":"center","align-items":"center"}),
-                html.Div(html.H1("Proportion of delays by months"), style={"text-align":"center"}),
+                html.Div(html.H1("Proportion of delays by months"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div([
                     dcc.Graph(id='carrier_bar_dep'),
                     dcc.Graph(id='carrier_bar_arr'),
-                ], style={"display":"flex","justify-content":"center","align-items":"center"}),])
+                ], style={"display":"flex","justify-content":"center","align-items":"center"})
+                ,])
             ),
             dcc.Tab(className="custom-tab icon4", selected_className='custom-tab--selected', label='Same departure time', 
             children=html.Div([
-                html.Div(html.H1(id = "deph_line_title"), style={"text-align":"center"}),
+                html.Div(html.H1(id = "deph_line_title"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 dcc.Graph(id='deph_line'),
-                html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center"}),
+                html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div([
                     dcc.Graph(id='deph_pie_dep'),
                     dcc.Graph(id='deph_pie_arr'),
                 ], style={"display":"flex"}),
-                html.Div(html.H1("Proportion of delays in 2012 by months"), style={"text-align":"center"}),
+                html.Div(html.H1("Proportion of delays in 2012 by months"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div([
                     dcc.Graph(id='deph_bar_dep'),
                     dcc.Graph(id='deph_bar_arr'),
@@ -135,14 +138,14 @@ app.layout = html.Div(
             ),
             dcc.Tab(className="custom-tab icon5", selected_className='custom-tab--selected', label='Same arrival time', 
             children=html.Div([
-                html.Div(html.H1(id = "arrh_line_title"), style={"text-align":"center"}),
+                html.Div(html.H1(id = "arrh_line_title"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 dcc.Graph(id='arrh_line'),
-                html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center"}),
+                html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div([
                     dcc.Graph(id='arrh_pie_dep'),
                     dcc.Graph(id='arrh_pie_arr'),
                 ], style={"display":"flex"}),
-                html.Div(html.H1("Proportion of delays by months"),style={"text-align":"center"}),
+                html.Div(html.H1("Proportion of delays by months"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div([
                     dcc.Graph(id='arrh_bar_dep'),
                     dcc.Graph(id='arrh_bar_arr'),
@@ -199,7 +202,7 @@ def update_output(value):
     if not value: 
         return ""
     dept, arr = value
-    dept = "{:02d}".format(dept%24)
+    dept ="{:02d}".format(dept%24)
     arr = "{:02d}".format(arr%24)
     return ('Checking for departure time at ' + dept + '00 hours, checking for arrival time at ' + arr + '00 hours.')
 
