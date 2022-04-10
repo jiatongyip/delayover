@@ -29,7 +29,6 @@
 
 }
 .custom-tab {
-    
     font-size: 18px;
     font-weight: 500;
     font-family: 'Poppsins,sans-serif';
@@ -45,9 +44,9 @@
     justify-content: center;
 }
 .custom-tab:hover{
-    background-color:#DDDDDD;
-    opacity: 0.9;
-    transition: 0.1s ease-in-out;
+    background-color:#DDDDDD  !important;
+    opacity: 0.8;
+    transition: 0.3s ease-in-out;
 }
 .custom-tab--selected {
     color: black;
