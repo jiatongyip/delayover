@@ -83,6 +83,8 @@ def generate_pie_bar(dep_df, arr_df, col_list):
                         "tickvals": list(range(1, 13))},
                 legend={'title_text':'Status'}
             )
+        pie_plot_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label')
+        pie_plot_arr.update_traces(textposition = 'outside' , textinfo = 'percent+label')
         return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
 
 def update_delay_type(dep_df, arr_df, col_list):
@@ -90,29 +92,29 @@ def update_delay_type(dep_df, arr_df, col_list):
             dep_df = dep_df[dep_df[col] == val]
             arr_df = arr_df[arr_df[col] == val]
         # classify delay types for departure
-        dep_df['delay'] = pd.cut(
+        dep_df['Delay'] = pd.cut(
             x = dep_df['mean'],
             bins = [-1*math.inf, 0, 15, 45, math.inf],
             labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
         )
         hist_dep = px.histogram(dep_df, 
             x='yr', 
-            color='delay', 
+            color='Delay', 
             barmode='group',
-            title = "of departure delays"
+            title = "Number of departure delays over the years"
         )
         hist_dep.update_layout(xaxis_title="Year")
         # classify delay types for arrival
-        arr_df['delay'] = pd.cut(
+        arr_df['Delay'] = pd.cut(
             x = arr_df['mean'],
             bins = [-1*math.inf, 0, 15, 45, math.inf],
             labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
         )
         hist_arr = px.histogram(arr_df, 
             x='yr', 
-            color='delay', 
+            color='Delay', 
             barmode='group',
-            title = "of arrival delays"
+            title = "Number of arrival delays over the years"
         )
         hist_arr.update_layout(xaxis_title="Year")
         return hist_dep, hist_arr
