@@ -2,6 +2,14 @@ import plotly.express as px
 import pandas as pd
 from datetime import date
 import math
+import datetime
+import requests
+flask_url = 'http://127.0.0.1:5000/prediction'
+from dash import Dash, dcc, html, no_update, dash_table
+
+
+with open("data/allowable_values.txt", "r") as file:
+    allowable_values = eval(file.read())
 
 # custom function
 def get_distance(airport_pairs, orig, dest):
@@ -118,3 +126,61 @@ def update_delay_type(dep_df, arr_df, col_list):
         )
         hist_arr.update_layout(xaxis_title="Year")
         return hist_dep, hist_arr
+
+def check_date(year, month, day):
+    try:
+        newDate = datetime.datetime(year, month, day)
+        correctDate = True
+    except (ValueError, TypeError, NameError):
+        correctDate = False
+    return correctDate
+
+def get_pred_for_upload(year, month, day, orig, dest, carrier, dep, arr, dist):
+    dayofweek = datetime.date(year, month, day).weekday()
+
+    param1 = {'yr': year, 'mon':month, 'day_of_week': dayofweek, 
+    'dep_hour':dep,'arr_hour':arr, 'u_carrier': carrier,
+    'origin_airport_code':orig, 'dest_airport_code': dest, 
+    'distance_grp':dist}
+
+    delay = requests.get(flask_url, params=param1).json()
+    return [max(float(delay['dep']), 0), max(float(delay['arr']),0)]
+
+def generate_pred_table(df, airport_pairs, allowable_values):
+    pred_df = pd.DataFrame(columns = ['year', 'month', 'day', 'origin', 'dest', 'carrier', 'dep_hour', 'arr_hour',
+                                    'dep_delay', 'arr_delay'])
+    for index, row in df.iterrows():
+        # check for additional columns
+        if len(row.dropna()) != 8:
+            continue
+        year, month, day, origin, dest, carrier, deph, arrh = row[0:8]
+        try: 
+            year = int(year)
+            month = int(month)
+            day = int(day)
+            deph = int(deph)
+            arrh = int(arrh)
+        except:
+            continue
+        if year not in allowable_values['year']:
+            continue
+        if not check_date(year, month, day):
+            continue
+        if (
+            (origin not in allowable_values['airport']) or 
+            (dest not in allowable_values['airport']) or
+            (carrier not in allowable_values['carrier']) or
+            (deph not in range(0, 24)) or
+            (arrh not in range(0, 24))
+        ):
+            continue
+        try:
+            dist = get_distance(airport_pairs, origin, dest)
+        except:
+            continue
+        row = [year, month, day, origin, dest, carrier, deph, arrh] + get_pred_for_upload(
+            year, month, day, origin, dest, carrier, deph, arrh, dist)
+        
+        pred_df.loc[len(pred_df)] = row
+
+    return pred_df

@@ -2,27 +2,23 @@
 # visit http://127.0.0.1:8050/ in your web browser.
 
 from pydoc import classname
-from dash import Dash, dcc
+from dash import Dash, dcc, html, no_update, dash_table
 import plotly.express as px
 import pandas as pd
+import datetime
 from datetime import date
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-from dash import Dash, html, dcc
 import requests
 import plotly.graph_objs as go
-from custom_functions import get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, update_delay_type
-
+from custom_functions import get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, update_delay_type, generate_pred_table
 import base64
-import datetime
 import io
-import plotly.graph_objs as go
 import cufflinks as cf
-from dash import no_update, dash_table, dcc, html
-from dash.dependencies import Input, Output, State
-app = Dash(__name__)
+
 flask_url = 'http://127.0.0.1:5000/prediction'
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
+app = Dash(__name__, external_stylesheets=external_stylesheets)
 
 #reading the data needed
 airport_pairs = pd.read_csv("data/airport_pairs.csv")
@@ -34,12 +30,14 @@ deph_arr_df = pd.read_csv("data/grp_deph_arr.csv")
 deph_dep_df = pd.read_csv("data/grp_deph_dep.csv")
 arrh_arr_df = pd.read_csv("data/grp_arrh_arr.csv")
 arrh_dep_df = pd.read_csv("data/grp_arrh_dep.csv")
+good_example_df = pd.read_csv("data/good_example.csv")
 
 with open("data/options_dict.txt", "r") as file:
     options_dict = eval(file.read())
 with open("data/carrier_dict.txt", "r") as file:
     carrier_dict = eval(file.read())
-
+with open("data/allowable_values.txt", "r") as file:
+    allowable_values = eval(file.read())
 # app
 app.layout = html.Div(
     [
@@ -182,19 +180,49 @@ app.layout = html.Div(
             dcc.Tab(className="custom-tab icon6", selected_className='custom-tab--selected', label='Upload files', 
             children=html.Div([
                 html.Div(html.H1("Please upload a .csv or . xls file"),style={"font-family": 'Poppins,sans-serif'}),
-                html.Div([dcc.Upload(html.Button('Upload File'))], style={"textAlign":"center","align-items":"center"}),
+                html.Div([
+                    html.H3("- Please ensure that your data is in the correct format and input type. Invalid rows will be ignored."),
+                    html.H3("- You may refer to an example of a valid csv below."),
+                    html.H3("- Please do not include header in the csv. The expected columns in order are:"),
+                    html.H3("year (integer), month (integer), day (integer), origin airport code, destination airport code, carrier (IATA), scheduled hour of departure (24 hour), scheduled hour of arrival (24 hour)"),
+                ]
+                ,style={"font-family": 'Poppins,sans-serif'}),
                 html.Br(),
-                dcc.Upload(['Drag and Drop or ', html.A(html.B('Select a File'))], 
-                           style={
-                               'width': '100%','height': '60px',
-                               'lineHeight': '60px','borderWidth': '1px',
-                               'borderStyle': 'dashed','borderRadius': '20px',
-                               'textAlign': 'center',"align-items":"center",
-                               "display":"flex", "justify-content":"center"},
-                           multiple = False),
-                html.Div(id='output-div'),
-                html.Div(id='output-datatable')],
-                              style={"textAlign":"center","align-items":"center"})
+                dcc.Upload(id = "upload_data", children = html.Div([
+                    'Drag and Drop or ', html.A(html.B('Select a File'))
+                ]), 
+                style={
+                    'width': '100%','height': '60px',
+                    'lineHeight': '60px','borderWidth': '1px',
+                    'borderStyle': 'dashed','borderRadius': '20px',
+                    'textAlign': 'center',"align-items":"center",
+                    "display":"flex", "justify-content":"center"
+                },
+                multiple = False),
+                html.Div(id='output_table'),
+                html.Div(id = "output_pie", style={"display":"flex","justify-content":"center","align-items":"center"}),
+                html.Div(html.H3("An example of a csv you may upload")),
+                html.Div([
+                    dash_table.DataTable(
+                        good_example_df.to_dict('records'),
+                        [{'name': i, 'id': i} for i in good_example_df.columns],
+                        style_header={ 'background-color': 'white' }
+
+                    ),
+                    html.Hr(),  # horizontal line
+                ]),
+                html.Div(html.H3("You may refer to the IATA for the supported carriers below.")),
+                html.Div([
+                    dash_table.DataTable(
+                        options_dict['carrier'],
+                        [{'name': 'Carrier name', 'id': "label"}, {'name': 'IATA', 'id': "value"}],
+                        sort_action = 'native'
+
+                    ),
+                    html.Hr(),  # horizontal line
+                ])                
+                
+            ], style={"textAlign":"center","align-items":"center"}),    
             )
         ])
     ]
@@ -512,7 +540,7 @@ def update_arrh_pie(time_slider):
     Output('arrh_hist_delay_arr','figure'),
     [Input('time_slider', 'value')]
     )
-def update_arrh_pie_delay_type(time_slider):
+def update_hist_delay_type(time_slider):
     try:
         hist_dep = px.histogram()
         hist_arr = px.histogram()
@@ -525,100 +553,83 @@ def update_arrh_pie_delay_type(time_slider):
         hist_dep, hist_arr = update_delay_type(arrh_dep_df, arrh_arr_df,
                                              [("arr_hour", arr)])
     return hist_dep, hist_arr
-
-@app.callback(Output('Mygraph', 'figure'), [
-Input('upload-data', 'contents'),
-Input('upload-data', 'filename')
-])
-def update_graph(contents, filename):
-    x = []
-    y = []
-    if contents:
-        contents = contents[0]
-        filename = filename[0]
-        df = parse_data(contents, filename)
-        df = df.set_index(df.columns[0])
-        x=df['DATE']
-        y=df['TMAX']
-    fig = go.Figure(
-        data=[
-            go.Scatter(
-                x=x, 
-                y=y, 
-                mode='lines+markers')
-            ],
-        layout=go.Layout(
-            plot_bgcolor=colors["graphBackground"],
-            paper_bgcolor=colors["graphBackground"]
-        ))
-    return fig
-
-
-def parse_data(contents, filename):
-    content_type, content_string = contents.split(",")
-
-    decoded = base64.b64decode(content_string)
-    try:
-        if "csv" in filename:
-            # Assume that the user uploaded a CSV or TXT file
-            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
-        elif "xls" in filename:
-            # Assume that the user uploaded an excel file
-            df = pd.read_excel(io.BytesIO(decoded))
-        elif "txt" or "tsv" in filename:
-            # Assume that the user upl, delimiter = r'\s+'oaded an excel file
-            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), delimiter=r"\s+")
-    except Exception as e:
-        print(e)
-        return html.Div(["There was an error processing this file."])
-
-    return df
-
-
 @app.callback(
-    Output("output-data-upload", "children"),
-    [Input("upload-data", "contents"), Input("upload-data", "filename")],
+    Output("output_pie", "children"),
+    Input("upload_data", "contents"), 
+    State("upload_data", "filename"),
 )
 
-
-def update_table(contents, filename):
-    table = html.Div()
-
+def output_pie(contents, filename):
+    children = html.Div()      
     if contents:
-        contents = contents[0]
-        filename = filename[0]
-        df = parse_data(contents, filename)
+        content_type, content_string = contents.split(",")
+        decoded = base64.b64decode(content_string)
+        try:
+            if "csv" in filename:
+                # Assume that the user uploaded a CSV file
+                df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), header=None)
+            elif "xls" in filename:
+                # Assume that the user uploaded an excel file
+                df = pd.read_excel(io.BytesIO(decoded), header=None)
+        except:
+            return children
+        pred_df = generate_pred_table(df, airport_pairs, allowable_values)
+        if len(pred_df) > 0:
+            # generate delay proportion for departure in 2012
+            dep_prop = sum(pred_df.dep_delay > 0) / len(pred_df) * 100
+            plot_dep = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [dep_prop, 100 - dep_prop]}),
+                values = 'Proportion', 
+                names = 'Status',
+                title = "% of departures predicted to delay",
+            )
+            arr_prop = sum(pred_df.arr_delay > 0) / len(pred_df) * 100
+            plot_arr = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [arr_prop, 100 - arr_prop]}),
+                values = 'Proportion', 
+                names = 'Status',
+                title = "% of arrival predicted to delay",
+            )
+            children = html.Div(children = [dcc.Graph(figure=plot_dep), dcc.Graph(figure=plot_arr)])
+    return children
 
-        table = html.Div(
-            [
-                html.H5(filename),
+@app.callback(
+    Output("output_table", "children"),
+    Input("upload_data", "contents"), 
+    State("upload_data", "filename"),
+)
+def output_table(contents, filename):
+    table = html.Div()
+    if contents:
+        content_type, content_string = contents.split(",")
+        decoded = base64.b64decode(content_string)
+        try:
+            if "csv" in filename:
+                # Assume that the user uploaded a CSV file
+                df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), header=None)
+            elif "xls" in filename:
+                # Assume that the user uploaded an excel file
+                df = pd.read_excel(io.BytesIO(decoded), header=None)
+            else:
+                return html.Div(["Unsupported file format."])
+        except Exception as e:
+            print(e)
+            return html.Div(["There was an error processing this file."])
+
+        pred_df = generate_pred_table(df, airport_pairs, allowable_values)
+        if len(pred_df) == 0:
+            table = html.Div("No valid rows")
+        else:
+            table =  html.Div([
                 dash_table.DataTable(
-                    data=df.to_dict("rows"),
-                    columns=[{"name": i, "id": i} for i in df.columns],
+                    data = pred_df.to_dict('records'),
+                    columns = [{'name': i, 'id': i} for i in pred_df.columns],
+                    sort_action="native",
+                    page_current= 0,
+                    page_size= 10,
                 ),
-                html.Hr(),
-                html.Div("Raw Content"),
-                html.Pre(
-                    contents[0:200] + "...",
-                    style={"whiteSpace": "pre-wrap", "wordBreak": "break-all"},
-                ),
-            ]
-        )
-
+                html.Hr(),  # horizontal line
+            ])
     return table
 
-@app.callback(Output('output-div', 'children'),
-              Input('submit-button','n_clicks'),
-              State('stored-data','data'),
-              State('xaxis-data','value'),
-              State('yaxis-data', 'value'))
-def make_graphs(n, data, x_data, y_data):
-    if n is None:
-        return no_update
-    else:
-        bar_fig = px.bar(data, x=x_data, y=y_data)
-        # print(data)
-        return dcc.Graph(figure=bar_fig)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
