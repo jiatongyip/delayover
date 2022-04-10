@@ -102,29 +102,32 @@ def update_delay_type(dep_df, arr_df, col_list):
         # classify delay types for departure
         dep_df['Delay'] = pd.cut(
             x = dep_df['mean'],
-            bins = [-1*math.inf, 0, 15, 45, math.inf],
-            labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
+            bins = [-1*math.inf, 15, 45, math.inf],
+            labels = ["No/Slight delay: < 15 mins", "Moderate delay: 15 - 45 mins", "Severe delay: > 45 mins"]
         )
         hist_dep = px.histogram(dep_df, 
             x='yr', 
             color='Delay', 
             barmode='group',
-            title = "Number of departure delays over the years"
+            title = "Mean departure delays over the years"
         )
-        hist_dep.update_layout(xaxis_title="Year")
+        
+        hist_dep.update_layout(xaxis_title="Year",  xaxis = dict(tickmode = 'linear'))
+        hist_dep.update_xaxes(ticks="inside")
         # classify delay types for arrival
         arr_df['Delay'] = pd.cut(
             x = arr_df['mean'],
-            bins = [-1*math.inf, 0, 15, 45, math.inf],
-            labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
+            bins = [-1*math.inf, 15, 45, math.inf],
+            labels = ["No/Slight delay: < 15 mins", "Moderate delay: 15 - 45 mins", "Severe delay: > 45 mins"]
         )
         hist_arr = px.histogram(arr_df, 
             x='yr', 
             color='Delay', 
             barmode='group',
-            title = "Number of arrival delays over the years"
+            title = "Mean arrival delays over the years"
         )
-        hist_arr.update_layout(xaxis_title="Year")
+        hist_arr.update_layout(xaxis_title="Year",  xaxis = dict(tickmode = 'linear'))
+        hist_arr.update_xaxes(ticks="inside")
         return hist_dep, hist_arr
 
 def check_date(year, month, day):
