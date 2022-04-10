@@ -118,7 +118,7 @@ app.layout = html.Div([
                 label='Predicted Delay',
                 children=html.Div(
                     children=[
-                        html.Div(html.H2(id='pred'),style={"font-size":"16px","padding-top":"10px"}),
+                        html.Div(html.H2(id='pred'), style={"font-size":"16px","padding-top":"10px"}),
                         html.Div([
                                 html.Div(html.H3("Select Date:"),style={"padding-right":"5px"}),
                                 dcc.DatePickerSingle(
@@ -130,7 +130,9 @@ app.layout = html.Div([
                                         month_format = "MMMM YYYY",
                                         display_format = "DD-MMM-YYYY"
                                     ),
-                        ],style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
+                                ],
+                                style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}
+                                ),
                         html.H3("Select Departure and Arrival time:"),  
                         dcc.RangeSlider(
                             min=0, max=48, step=1,
@@ -251,7 +253,8 @@ def get_pred(date_picker, time_slider, orig, dest, carrier):
         'dep_hour':dep,'arr_hour':arr, 'u_carrier': carrier,
         'origin_airport_code':orig, 'dest_airport_code': dest, 
         'distance_grp':dist}
-        delay = requests.get(flask_url, params=param1).json()
+
+        delay = requests.get(flask_url, params=param1).json()        
         arr_delay = delay['arr']
         dep_delay = delay['dep']
 
