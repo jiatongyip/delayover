@@ -11,7 +11,7 @@ from dash.exceptions import PreventUpdate
 from dash import Dash, html, dcc
 import requests
 import plotly.graph_objs as go
-from custom_functions import get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar
+from custom_functions import get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, update_delay_type
 
 app = Dash(__name__)
 flask_url = 'http://127.0.0.1:5000/prediction'
@@ -101,6 +101,11 @@ app.layout = html.Div(
                     html.Div([
                         dcc.Graph(id='orig_dest_bar_dep'),
                         dcc.Graph(id='orig_dest_bar_arr'),
+                    ], style={"display":"flex","align-items":"center","justify-content":"center"}),
+                    html.H1("Historical breakdown of delays by years", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+                    html.Div([
+                        dcc.Graph(id='orig_dest_hist_delay_dep'),
+                        dcc.Graph(id='orig_dest_hist_delay_arr'),
                     ], style={"display":"flex","align-items":"center","justify-content":"center"})
                 ]),
             ),
@@ -117,6 +122,11 @@ app.layout = html.Div(
                 html.Div([
                     dcc.Graph(id='carrier_bar_dep'),
                     dcc.Graph(id='carrier_bar_arr'),
+                ], style={"display":"flex","justify-content":"center","align-items":"center"}),
+                html.Div(html.H1("Historical breakdown of delays by years"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+                html.Div([
+                    dcc.Graph(id='carrier_hist_delay_dep'),
+                    dcc.Graph(id='carrier_hist_delay_arr'),
                 ], style={"display":"flex","justify-content":"center","align-items":"center"})
                 ,])
             ),
@@ -134,6 +144,11 @@ app.layout = html.Div(
                     dcc.Graph(id='deph_bar_dep'),
                     dcc.Graph(id='deph_bar_arr'),
                 ], style={"display":"flex","justify-content":"center","align-items":"center"}),
+                html.Div(html.H1("Historical breakdown of delays by years"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+                html.Div([
+                    dcc.Graph(id='deph_hist_delay_dep'),
+                    dcc.Graph(id='deph_hist_delay_arr'),
+                ], style={"display":"flex","justify-content":"center","align-items":"center"})
             ])
             ),
             dcc.Tab(className="custom-tab icon5", selected_className='custom-tab--selected', label='Same arrival time', 
@@ -150,6 +165,11 @@ app.layout = html.Div(
                     dcc.Graph(id='arrh_bar_dep'),
                     dcc.Graph(id='arrh_bar_arr'),
                 ], style={"display":"flex","justify-content":"center","align-items":"center"}),
+                html.Div(html.H1("Breakdown of historical delays by years"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+                html.Div([
+                    dcc.Graph(id='arrh_hist_delay_dep'),
+                    dcc.Graph(id='arrh_hist_delay_arr'),
+                ], style={"display":"flex","justify-content":"center","align-items":"center"})
             ])
             )        
         ])
@@ -277,6 +297,18 @@ def update_orig_dest_pie(orig, dest):
                                                                               [("origin_airport_code", orig), ("dest_airport_code", dest)])
     return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
 
+def update_orig_dest_hist_delay_type(orig, dest):
+    try:
+        hist_dep = px.histogram()
+        hist_arr = px.histogram()
+    except ValueError:
+        hist_dep = px.histogram()
+        hist_arr = px.histogram()       
+    if all([orig, dest]):
+        hist_dep, hist_arr = update_delay_type(orig_dest_dep_df, orig_dest_arr_df,
+                                             [("origin_airport_code", orig), ("dest_airport_code", dest)])
+    return hist_dep, hist_arr
+
 @app.callback(
     Output('carrier_line','figure'),
     Output('carrier_line_title','children'),
@@ -317,6 +349,23 @@ def update_carrier_pie(carrier):
     if carrier:
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(carrier_dep_df, carrier_arr_df, [("u_carrier", carrier)])
     return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+
+@app.callback(
+    Output('carrier_hist_delay_dep','figure'),
+    Output('carrier_hist_delay_arr','figure'),
+    Input('carrier', 'value')
+    )
+def update_carrier_hist_delay_type(carrier):
+    try:
+        hist_dep = px.histogram()
+        hist_arr = px.histogram()
+    except ValueError:
+        hist_dep = px.histogram()
+        hist_arr = px.histogram()       
+    if carrier:
+        hist_dep, hist_arr = update_delay_type(carrier_dep_df, carrier_arr_df, 
+                                             [("u_carrier", carrier)])
+    return hist_dep, hist_arr
 
 @app.callback(
     Output('deph_line','figure'),
@@ -363,6 +412,25 @@ def update_deph_pie(time_slider):
     return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
 
 @app.callback(
+    Output('deph_hist_delay_dep','figure'),
+    Output('deph_hist_delay_arr','figure'),
+    [Input('time_slider', 'value')]
+    )
+def update_deph_hist_delay_type(time_slider):
+    try:
+        hist_dep = px.histogram()
+        hist_arr = px.histogram()
+    except ValueError:
+        hist_dep = px.histogram()
+        hist_arr = px.histogram()       
+    if time_slider:
+        dep, arr = time_slider
+        dep = dep%24
+        hist_dep, hist_arr = update_delay_type(deph_dep_df, deph_arr_df,
+                                             [("dep_hour", dep)])
+    return hist_dep, hist_arr
+
+@app.callback(
     Output('arrh_line','figure'),
     Output('arrh_line_title','children'),
     [Input('time_slider', 'value')]
@@ -405,6 +473,25 @@ def update_arrh_pie(time_slider):
         arr = arr%24        
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(arrh_dep_df, arrh_arr_df, [("arr_hour", arr)])
     return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+
+@app.callback(
+    Output('arrh_hist_delay_dep','figure'),
+    Output('arrh_hist_delay_arr','figure'),
+    [Input('time_slider', 'value')]
+    )
+def update_arrh_pie_delay_type(time_slider):
+    try:
+        hist_dep = px.histogram()
+        hist_arr = px.histogram()
+    except ValueError:
+        hist_dep = px.histogram()
+        hist_arr = px.histogram()      
+    if time_slider:
+        dep, arr = time_slider
+        arr = arr%24
+        hist_dep, hist_arr = update_delay_type(arrh_dep_df, arrh_arr_df,
+                                             [("arr_hour", arr)])
+    return hist_dep, hist_arr
 
 if __name__ == '__main__':
     app.run_server(debug=True)
