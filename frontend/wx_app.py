@@ -107,36 +107,35 @@ def generate_pie_bar(dep_df, arr_df, col_list):
         return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
 
 def update_delay_type(dep_df, arr_df, col_list):
-        col_list += [("yr", 2012)]
         for (col, val) in col_list:
             dep_df = dep_df[dep_df[col] == val]
             arr_df = arr_df[arr_df[col] == val]
         # classify delay types for departure
         dep_df['delay'] = pd.cut(
             x = dep_df['mean'],
-            bins = [-1*math.inf, 0, 15, 30, math.inf],
+            bins = [-1*math.inf, 0, 15, 45, math.inf],
             labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
         )
-        dep_df = dep_df['delay'].value_counts().sort_index()
-        dep_df = dep_df / dep_df.sum()
+        dep_df['percentage'] = dep_df['count']*dep_df['prop']*100 / sum(dep_df['count'])
+        dep_df = dep_df.groupby('delay').sum()
         pie_dep = px.pie(dep_df,
-            values = dep_df,
+            values = dep_df['percentage'],
             names = ["No delay", "Slight delay", "Moderate delay", "Severe delay"],
-            title = "Breakdown of departure delays"
+            title = "Historical breakdown of departure delays"
         )
         pie_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label')
         # classify delay types for arrival
         arr_df['delay'] = pd.cut(
             x = arr_df['mean'],
-            bins = [-1*math.inf, 0, 15, 30, math.inf],
+            bins = [-1*math.inf, 0, 15, 45, math.inf],
             labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
         )
-        arr_df = arr_df['delay'].value_counts().sort_index()
-        arr_df = arr_df / arr_df.sum()
+        arr_df['percentage'] = arr_df['count']*arr_df['prop']*100 / sum(arr_df['count'])
+        arr_df = arr_df.groupby('delay').sum()
         pie_arr = px.pie(arr_df,
-            values = arr_df,
+            values = arr_df['percentage'],
             names = ["No delay", "Slight delay", "Moderate delay", "Severe delay"],
-            title = "Breakdown of arrival delays"
+            title = "Historical breakdown of arrival delays"
         )
         pie_arr.update_traces(textposition = 'outside' , textinfo = 'percent+label')
         return pie_dep, pie_arr
@@ -211,6 +210,7 @@ app.layout = html.Div([
                 html.H1("breaking down by months"),
                 dcc.Graph(id='orig_dest_bar_dep'),
                 dcc.Graph(id='orig_dest_bar_arr'),
+                html.H1("Historical breakdown"),
                 dcc.Graph(id='orig_dest_pie_delay_dep'),
                 dcc.Graph(id='orig_dest_pie_delay_arr')
                 ]
@@ -228,6 +228,9 @@ app.layout = html.Div([
                 html.H1("breaking down by months"),
                 dcc.Graph(id='carrier_bar_dep'),
                 dcc.Graph(id='carrier_bar_arr'),
+                html.H1("Historical breakdown"),
+                dcc.Graph(id='carrier_pie_delay_dep'),
+                dcc.Graph(id='carrier_pie_delay_arr')
                 ]
             )
         ),
@@ -243,6 +246,9 @@ app.layout = html.Div([
                 html.H1("breaking down by months"),
                 dcc.Graph(id='deph_bar_dep'),
                 dcc.Graph(id='deph_bar_arr'),
+                html.H1("Historical breakdown"),
+                dcc.Graph(id='deph_pie_delay_dep'),
+                dcc.Graph(id='deph_pie_delay_arr')
                 ]
             )
         ),
@@ -257,7 +263,10 @@ app.layout = html.Div([
                 dcc.Graph(id='arrh_pie_arr'),
                 html.H1("breaking down by months"),
                 dcc.Graph(id='arrh_bar_dep'),
-                dcc.Graph(id='arrh_bar_arr'),]
+                dcc.Graph(id='arrh_bar_arr'),
+                html.H1("Historical breakdown"),
+                dcc.Graph(id='arrh_pie_delay_dep'),
+                dcc.Graph(id='arrh_pie_delay_arr')]
             )
         )        
     ])
@@ -391,10 +400,10 @@ def update_orig_dest_pie_delay_type(orig, dest):
         pie_arr = px.pie()
     except ValueError:
         pie_dep = px.pie()
-        pie_arr = px.pie()
+        pie_arr = px.pie()       
     if all([orig, dest]):
-        pie_dep, pie_arr = update_delay_type(orig_dest_dep_df, orig_dest_arr_df, 
-                                                                              [("origin_airport_code", orig), ("dest_airport_code", dest)])
+        pie_dep, pie_arr = update_delay_type(orig_dest_dep_df, orig_dest_arr_df,
+                                             [("origin_airport_code", orig), ("dest_airport_code", dest)])
     return pie_dep, pie_arr
 
 @app.callback(
@@ -437,6 +446,23 @@ def update_carrier_pie(carrier):
     if carrier:
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(carrier_dep_df, carrier_arr_df, [("u_carrier", carrier)])
     return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+
+@app.callback(
+    Output('carrier_pie_delay_dep','figure'),
+    Output('carrier_pie_delay_arr','figure'),
+    Input('carrier', 'value')
+    )
+def update_carrier_pie_delay_type(carrier):
+    try:
+        pie_dep = px.pie()
+        pie_arr = px.pie()
+    except ValueError:
+        pie_dep = px.pie()
+        pie_arr = px.pie()       
+    if carrier:
+        pie_dep, pie_arr = update_delay_type(carrier_dep_df, carrier_arr_df, 
+                                             [("u_carrier", carrier)])
+    return pie_dep, pie_arr
 
 @app.callback(
     Output('deph_line','figure'),
@@ -483,6 +509,24 @@ def update_deph_pie(time_slider):
     return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
 
 @app.callback(
+    Output('deph_pie_delay_dep','figure'),
+    Output('deph_pie_delay_arr','figure'),
+    [Input('time_slider', 'value')]
+    )
+def update_deph_pie_delay_type(time_slider):
+    try:
+        pie_dep = px.pie()
+        pie_arr = px.pie()
+    except ValueError:
+        pie_dep = px.pie()
+        pie_arr = px.pie()       
+    if time_slider:
+        dep, arr = time_slider
+        pie_dep, pie_arr = update_delay_type(deph_dep_df, deph_arr_df,
+                                             [("dep_hour", dep)])
+    return pie_dep, pie_arr
+
+@app.callback(
     Output('arrh_line','figure'),
     Output('arrh_line_title','children'),
     [Input('time_slider', 'value')]
@@ -525,6 +569,24 @@ def update_arrh_pie(time_slider):
         arr = arr%24        
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(arrh_dep_df, arrh_arr_df, [("arr_hour", arr)])
     return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+
+@app.callback(
+    Output('arrh_pie_delay_dep','figure'),
+    Output('arrh_pie_delay_arr','figure'),
+    [Input('time_slider', 'value')]
+    )
+def update_arrh_pie_delay_type(time_slider):
+    try:
+        pie_dep = px.pie()
+        pie_arr = px.pie()
+    except ValueError:
+        pie_dep = px.pie()
+        pie_arr = px.pie()       
+    if time_slider:
+        dep, arr = time_slider
+        pie_dep, pie_arr = update_delay_type(arrh_dep_df, arrh_arr_df,
+                                             [("arr_hour", arr)])
+    return pie_dep, pie_arr
 
 if __name__ == '__main__':
     app.run_server(debug=True)
