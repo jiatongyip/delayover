@@ -152,8 +152,8 @@ app.layout = html.Div(
 
                 html.Div([
                     html.H3("Please ensure that your data is in the correct format and input type. Invalid rows will be ignored."),
-                    html.H3("You may refer to an example of a valid csv below."),
-                    html.H3("Please do not include header in the csv. The expected columns in order are:"),
+                    html.H3("You may refer to an example of a valid csv file below."),
+                    html.H3("Please do not include headers in the file. The expected columns in order are:"),
                     html.Ol([
                         html.Li("year (integer)"),
                         html.Li("month (integer)",style={"padding-top":"5px"}),
@@ -179,8 +179,12 @@ app.layout = html.Div(
                 
                 className="drop",
                 multiple = False),
+                html.Div([
+                    html.Br(),
+                ]),
                 html.Div(id='output_table'),
                 html.Div(id = "output_pie", style={"display":"flex","justify-content":"center","align-items":"center"}),
+                html.Hr(),
                 html.Div([
                     dash_table.DataTable(
                         good_example_df.to_dict('records'),
@@ -535,6 +539,7 @@ def output_table(contents, filename):
             table = html.Div("No valid rows.")
         else:
             table =  html.Div([
+                html.H3("Predictions for " + filename),
                 dash_table.DataTable(
                     data = pred_df.to_dict('records'),
                     columns = [{'name': i, 'id': i} for i in pred_df.columns],
@@ -542,7 +547,6 @@ def output_table(contents, filename):
                     page_current= 0,
                     page_size= 10,
                 ),
-                html.Hr(),  # horizontal line
             ])
     return table
 
