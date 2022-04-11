@@ -103,7 +103,7 @@ app.layout = html.Div(
                     ),
                     html.H1("Proportion of delays by months", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                     html.Div(id='orig_dest_bar', style={"display":"flex","align-items":"center","justify-content":"center"}),
-                    html.H1("Historical breakdown of delays by years", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+                    html.H1("Types of delays in 2012 by month", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                     html.Div(id='orig_dest_hist_delay', style={"display":"flex","align-items":"center","justify-content":"center"})
                 ]),
             ),
@@ -115,7 +115,7 @@ app.layout = html.Div(
                 html.Div(id='carrier_pie', style={"display":"flex","justify-content":"center","align-items":"center"}),
                 html.Div(html.H1("Proportion of delays by months"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div(id='carrier_bar', style={"display":"flex","justify-content":"center","align-items":"center"}),
-                html.Div(html.H1("Historical breakdown of delays by years"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+                html.Div(html.H1("Types of delays in 2012 by month"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div(id='carrier_hist_delay', style={"display":"flex","justify-content":"center","align-items":"center"})
                 ,])
             ),
@@ -127,7 +127,7 @@ app.layout = html.Div(
                 html.Div(id="deph_pie", style={"display":"flex","align-items":"center","justify-content":"center"}),
                 html.Div(html.H1("Proportion of delays in 2012 by months"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div(id="deph_bar", style={"display":"flex","justify-content":"center","align-items":"center"}),
-                html.Div(html.H1("Historical breakdown of delays by years"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+                html.Div(html.H1("Types of delays in 2012 by month"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div(id='deph_hist_delay', style={"display":"flex","justify-content":"center","align-items":"center"})
             ])
             ),
@@ -139,7 +139,7 @@ app.layout = html.Div(
                 html.Div(id='arrh_pie', style={"display":"flex","align-items":"center","justify-content":"center"}),
                 html.Div(html.H1("Proportion of delays by months"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div(id="arrh_bar", style={"display":"flex","justify-content":"center","align-items":"center"}),
-                html.Div(html.H1("Breakdown of historical delays by years"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+                html.Div(html.H1("Types of delays in 2012 by month"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div(id="arrh_hist_delay", style={"display":"flex","justify-content":"center","align-items":"center"})
             ])
             ),
