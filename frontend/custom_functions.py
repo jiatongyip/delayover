@@ -124,7 +124,7 @@ def update_delay_type(dep_df, arr_df, col_list):
             color='Delay', 
             barmode='group',
             nbins = 12,
-            title = "Types of departure delays in 2012 by month",
+            title = "Types of departure delays in each month",
             category_orders={"Delay": ["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]},
             labels = {'mon': 'Month', 'count': 'Count'},
             color_discrete_sequence = ['#003676','#FFC90B','#48afdb']
@@ -141,14 +141,14 @@ def update_delay_type(dep_df, arr_df, col_list):
             color='Delay', 
             barmode='group',
             nbins = 12,
-            title = "Types of arrival delays in 2012 by month",
+            title = "Types of arrival delays in each month",
             category_orders={"Delay": ["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]},
             labels = {'mon': 'Month', 'count': 'Count'},
             color_discrete_sequence = ['#003676','#FFC90B','#48afdb']
         )
-        hist_dep.update_layout(yaxis_title="Count", xaxis_title="Month" , xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        hist_dep.update_layout(yaxis_title="Count", xaxis_title="Month in 2012" , xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         "tickvals": list(range(1, 13))})
-        hist_arr.update_layout(yaxis_title="Count", xaxis_title="Month", xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        hist_arr.update_layout(yaxis_title="Count", xaxis_title="Month in 2012", xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         "tickvals": list(range(1, 13))})
         return hist_dep, hist_arr
 
