@@ -52,7 +52,11 @@ app.layout = html.Div(
                 label='Predicted Delay',
                 children=html.Div(
                     children=[
-                        html.Div(html.H2(id='pred'), style={"font-size":"16px","padding-top":"10px","text-align":"center"}),
+                        html.Div([
+                        html.H2(id='pred',style={"font-size":"24px"})
+                        ],style={"padding":"5px","text-align":"center",
+                        "width":"500px","margin":"30px auto","box-shadow": "0px 2px 6px rgba(0, 38, 83, 0.25)"}
+                        ),
                         html.Div(
                             [html.Div(html.H2("Select Date:"), style={"padding-right":"5px"}),
                             html.Div(
@@ -140,38 +144,54 @@ app.layout = html.Div(
             ),
             dcc.Tab(className="custom-tab icon6", selected_className='custom-tab--selected', label='Upload files', 
             children=html.Div([
-                html.Div(html.H1("Please upload a .csv or . xls file"),style={"font-family": 'Poppins,sans-serif'}),
+
                 html.Div([
-                    html.H3("- Please ensure that your data is in the correct format and input type. Invalid rows will be ignored."),
-                    html.H3("- You may refer to an example of a valid csv below."),
-                    html.H3("- Please do not include header in the csv. The expected columns in order are:"),
-                    html.H3("year (integer), month (integer), day (integer), origin airport code, destination airport code, carrier (IATA), scheduled hour of departure (24 hour), scheduled hour of arrival (24 hour)"),
+                    html.Img(src=app.get_asset_url('pin.svg'),style={"padding-right":"20px","width":"20px"}),
+                    html.H1("Please upload a .csv or . xls file",style={"font-size":"36px"})
+                ],style={"font-family": 'Poppins,sans-serif',"display":"flex","align-items":"center","justify-content":"center"}),
+
+                html.Div([
+                    html.H3("Please ensure that your data is in the correct format and input type. Invalid rows will be ignored."),
+                    html.H3("You may refer to an example of a valid csv below."),
+                    html.H3("Please do not include header in the csv. The expected columns in order are:"),
+                    html.Ol([
+                        html.Li("year (integer)"),
+                        html.Li("month (integer)",style={"padding-top":"5px"}),
+                        html.Li("day (integer)",style={"padding-top":"5px"}),
+                        html.Li("origin airport code",style={"padding-top":"5px"}),
+                        html.Li("carrier (IATA)",style={"padding-top":"5px"}),
+                        html.Li("scheduled hour of departure (24 hour)",style={"padding-top":"5px"})
+                        ,]
+                    )
                 ]
-                ,style={"font-family": 'Poppins,sans-serif'}),
-                html.Br(),
-                dcc.Upload(id = "upload_data", children = html.Div([
-                    'Drag and Drop or ', html.A(html.B('Select a File'))
+                ,style={"font-family": 'Poppins,sans-serif',"width":"560px","margin":"0 auto",
+                "text-align":"left","padding":"20px 30px","box-shadow": "0px 4px 4px rgba(0, 0, 0, 0.25)",'margin-bottom':"40px"
+                }),
+                
+                dcc.Upload(id = "upload_data", 
+                children = html.Div([
+                    'Drop or Select a file ', 
                 ]), 
                 style={
-                    'width': '100%','height': '60px',
-                    'lineHeight': '60px','borderWidth': '1px',
-                    'borderStyle': 'dashed','borderRadius': '20px',
-                    'textAlign': 'center',"align-items":"center",
-                    "display":"flex", "justify-content":"center"
+                    'textAlign': 'center',"margin":"0 auto"
+                    
                 },
+                
+                className="drop",
                 multiple = False),
                 html.Div(id='output_table'),
                 html.Div(id = "output_pie", style={"display":"flex","justify-content":"center","align-items":"center"}),
-                html.Div(html.H3("An example of a csv you may upload")),
                 html.Div([
                     dash_table.DataTable(
                         good_example_df.to_dict('records'),
                         [{'name': i, 'id': i} for i in good_example_df.columns],
-                        style_header={ 'background-color': 'white' }
+                        style_cell={'textAlign': 'center'},
+                        style_header={ 'background-color': 'white',"text-align":"center"}
                     ),
                     html.Hr(),  # horizontal line
-                ]),
-                html.Div(html.H3("You may refer to the IATA for the supported carriers below.")),
+                ],style={"padding-top":"40px","width":"500px","margin":"0 auto","text-align":'center'}),
+                html.I("An example of a csv you may upload"),
+                html.H2("You may refer to the IATA for the supported carriers below.", style={"padding-top":"30px"}),
                 html.Div([
                     dash_table.DataTable(
                         options_dict['carrier'],
@@ -185,7 +205,7 @@ app.layout = html.Div(
                         sort_action = 'native'
                     ),
                     html.Hr(),  # horizontal line
-                ], style={"textAlign":"center","align-items":"center","width":"60%",'marginLeft': 'auto', 'marginRight': 'auto'})
+                ], style={"textAlign":"center","align-items":"center","width":"700px",'marginLeft': 'auto', 'marginRight': 'auto'})
             ], style={"textAlign":"center","align-items":"center"}),    
             )
         ])
