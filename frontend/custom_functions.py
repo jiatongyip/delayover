@@ -114,33 +114,34 @@ def update_delay_type(dep_df, arr_df, col_list):
         # classify delay types for departure
         dep_df['Delay'] = pd.cut(
             x = dep_df['mean'],
-            bins = [-1*math.inf, 0, 15, 45, math.inf],
-            labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
+            bins = [-1*math.inf, 15, 45, math.inf],
+            labels = ["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]
         )
         hist_dep = px.histogram(dep_df, 
             x='yr', 
             color='Delay', 
             barmode='group',
             title = "Number of departure delays over the years",
-            category_orders={"Delay": ["No delay", "Slight delay", "Moderate delay", "Severe delay"]},
+            category_orders={"Delay": ["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]},
             labels = {'yr': 'Year', 'count': 'Count'}
         )
         hist_dep.update_layout(yaxis_title="Count")
         # classify delay types for arrival
         arr_df['Delay'] = pd.cut(
             x = arr_df['mean'],
-            bins = [-1*math.inf, 0, 15, 45, math.inf],
-            labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
+            bins = [-1*math.inf, 15, 45, math.inf],
+            labels = ["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]
         )
         hist_arr = px.histogram(arr_df, 
             x='yr', 
             color='Delay', 
             barmode='group',
             title = "Number of arrival delays over the years",
-            category_orders={"Delay": ["No delay", "Slight delay", "Moderate delay", "Severe delay"]},
+            category_orders={"Delay":["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]},
             labels = {'yr': 'Year', 'count': 'Count'}
         )
-        hist_arr.update_layout(yaxis_title="Count")
+        hist_dep.update_layout(yaxis_title="Count", xaxis_title="Year", xaxis = dict(tickmode = 'linear'))
+        hist_arr.update_layout(yaxis_title="Count", xaxis_title="Year", xaxis = dict(tickmode = 'linear'))
         return hist_dep, hist_arr
 
 def check_date(year, month, day):
