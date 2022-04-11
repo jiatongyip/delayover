@@ -1,7 +1,6 @@
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
-from msilib.text import tables
 from pydoc import classname
 from dash import Dash, dcc, html, no_update, dash_table
 import plotly.express as px
@@ -18,7 +17,7 @@ import cufflinks as cf
 flask_url = 'http://127.0.0.1:5000/prediction'
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
-api_key = 'da5e2fca806ad3496172e27dd9c53916'
+api_key = '59a5613063b8284d452cd698cbde10d7'
 
 #reading the data needed
 airport_pairs = pd.read_csv("data/airport_pairs.csv")
@@ -54,7 +53,11 @@ app.layout = html.Div(
                 label='Predicted Delay',
                 children=html.Div(
                     children=[
-                        html.Div(html.H2(id='pred'), style={"font-size":"16px","padding-top":"10px","text-align":"center"}),
+                        html.Div([
+                        html.H2(id='pred',style={"font-size":"24px"})
+                        ],style={"padding":"5px","text-align":"center",
+                        "width":"500px","margin":"30px auto","box-shadow": "0px 2px 6px rgba(0, 38, 83, 0.25)"}
+                        ),
                         html.Div(
                             [html.Div(html.H2("Select Date:"), style={"padding-right":"5px"}),
                             html.Div(
@@ -121,7 +124,7 @@ app.layout = html.Div(
                 html.Div(html.H1(id = "deph_line_title"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 dcc.Graph(id='deph_line'),
                 html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id="deph_pie", style={"display":"flex"}),
+                html.Div(id="deph_pie", style={"display":"flex","align-items":"center","justify-content":"center"}),
                 html.Div(html.H1("Proportion of delays in 2012 by months"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div(id="deph_bar", style={"display":"flex","justify-content":"center","align-items":"center"}),
                 html.Div(html.H1("Historical breakdown of delays by years"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
@@ -133,7 +136,7 @@ app.layout = html.Div(
                 html.Div(html.H1(id = "arrh_line_title"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 dcc.Graph(id='arrh_line'),
                 html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id='arrh_pie', style={"display":"flex"}),
+                html.Div(id='arrh_pie', style={"display":"flex","align-items":"center","justify-content":"center"}),
                 html.Div(html.H1("Proportion of delays by months"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div(id="arrh_bar", style={"display":"flex","justify-content":"center","align-items":"center"}),
                 html.Div(html.H1("Breakdown of historical delays by years"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
@@ -142,66 +145,84 @@ app.layout = html.Div(
             ),
             dcc.Tab(className="custom-tab icon6", selected_className='custom-tab--selected', label='Upload files', 
             children=html.Div([
-                html.Div(html.H1("Please upload a .csv or . xls file"),style={"font-family": 'Poppins,sans-serif'}),
+
                 html.Div([
-                    html.H3("- Please ensure that your data is in the correct format and input type. Invalid rows will be ignored."),
-                    html.H3("- You may refer to an example of a valid csv below."),
-                    html.H3("- Please do not include header in the csv. The expected columns in order are:"),
-                    html.H3("year (integer), month (integer), day (integer), origin airport code, destination airport code, carrier (IATA), scheduled hour of departure (24 hour), scheduled hour of arrival (24 hour)"),
+                    html.Img(src=app.get_asset_url('pin.svg'),style={"padding-right":"20px","width":"20px"}),
+                    html.H1("Please upload a .csv or . xls file",style={"font-size":"36px"})
+                ],style={"font-family": 'Poppins,sans-serif',"display":"flex","align-items":"center","justify-content":"center"}),
+
+                html.Div([
+                    html.H3("Please ensure that your data is in the correct format and input type. Invalid rows will be ignored."),
+                    html.H3("You may refer to an example of a valid csv file below."),
+                    html.H3("Please do not include headers in the file. The expected columns in order are:"),
+                    html.Ol([
+                        html.Li("year (integer)"),
+                        html.Li("month (integer)",style={"padding-top":"5px"}),
+                        html.Li("day (integer)",style={"padding-top":"5px"}),
+                        html.Li("origin airport code",style={"padding-top":"5px"}),
+                        html.Li("carrier (IATA)",style={"padding-top":"5px"}),
+                        html.Li("scheduled hour of departure (24 hour)",style={"padding-top":"5px"})
+                        ,]
+                    )
                 ]
-                ,style={"font-family": 'Poppins,sans-serif'}),
-                html.Br(),
-                dcc.Upload(id = "upload_data", children = html.Div([
-                    'Drag and Drop or ', html.A(html.B('Select a File'))
+                ,style={"font-family": 'Poppins,sans-serif',"width":"560px","margin":"0 auto",
+                "text-align":"left","padding":"20px 30px","box-shadow": "0px 4px 4px rgba(0, 0, 0, 0.25)",'margin-bottom':"40px"
+                }),
+                
+                dcc.Upload(id = "upload_data", 
+                children = html.Div([
+                    'Drop or Select a file ', 
                 ]), 
                 style={
-                    'width': '100%','height': '60px',
-                    'lineHeight': '60px','borderWidth': '1px',
-                    'borderStyle': 'dashed','borderRadius': '20px',
-                    'textAlign': 'center',"align-items":"center",
-                    "display":"flex", "justify-content":"center"
+                    'textAlign': 'center',"margin":"0 auto"
+                    
                 },
+                
+                className="drop",
                 multiple = False),
+                html.Div([
+                    html.Br(),
+                ]),
                 html.Div(id='output_table'),
                 html.Div(id = "output_pie", style={"display":"flex","justify-content":"center","align-items":"center"}),
-                html.Div(html.H3("An example of a csv you may upload")),
+                html.Hr(),
                 html.Div([
                     dash_table.DataTable(
                         good_example_df.to_dict('records'),
                         [{'name': i, 'id': i} for i in good_example_df.columns],
-                        style_header={ 'background-color': 'white' }
+                        style_cell={'textAlign': 'center'},
+                        style_header={ 'background-color': 'white',"text-align":"center"}
                     ),
                     html.Hr(),  # horizontal line
-                ]),
-                html.Div(html.H3("You may refer to the IATA for the supported carriers below.")),
+                ],style={"padding-top":"40px","width":"500px","margin":"0 auto","text-align":'center'}),
+                html.I("An example of a csv you may upload"),
+                html.H2("You may refer to the IATA for the supported carriers below.", style={"padding-top":"30px"}),
                 html.Div([
                     dash_table.DataTable(
                         options_dict['carrier'],
                         [{'name': 'Carrier name', 'id': "label"}, {'name': 'IATA', 'id': "value"}],
+                        style_cell={'textAlign': 'center'},
+                        style_data_conditional=[{
+                            'if': {'row_index': 'odd'},'backgroundColor': 'rgb(241, 241, 241)'
+                            }
+                        ],
+                        style_header={'fontWeight': 'bold','backgroundColor': 'rgb(241, 241, 241)'},
                         sort_action = 'native'
                     ),
                     html.Hr(),  # horizontal line
-                ])                
+                ], style={"textAlign":"center","align-items":"center","width":"700px",'marginLeft': 'auto', 'marginRight': 'auto'})
             ], style={"textAlign":"center","align-items":"center"}),    
             ),
             dcc.Tab(selected_className='custom-tab--selected', label='Real Time API', 
             children=html.Div([
                 html.Div(html.H1('Real Time API from AviationStack'), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div([
-                    html.Div(html.H2("Select an Airport:"), style={"padding-right":"5px"}),
-                    html.Div(dcc.Dropdown(id='orig3', value = "DAB"), style={"padding":"10px 20px","width":"100px"}),
-                    html.Div(id = 'airportTable')
-                ]),
-                html.Div(html.H1("Select the options to start predicting"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div([
                     html.Div(html.H2("Select Origin:"), style={"padding-right":"5px"}),
-                    html.Div(dcc.Dropdown(id='orig2', value = "DAB"), style={"padding":"10px 20px","width":"100px"}),
+                    html.Div(dcc.Dropdown(id='orig2', value = ""), style={"padding":"10px 20px","width":"100px"}),
                     html.Div(html.H2("Select Destination:"), style={"padding-left":"20px","padding-right":"5px"}),
-                    html.Div(dcc.Dropdown(id='dest2', value = "ATL"), style={"padding":"10px 20px","width":"100px"}),
-                    html.Div(html.H2("Select Carrier:"), style={"padding-left":"20px","padding-right":"5px"}),
-                    html.Div(dcc.Dropdown(id='carrier2', value = 'DL', options=options_dict['carrier']),style={"padding":"10px 20px","width":"200px"}),
-                    ], style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(html.H2(id='pred2'), style={"font-size":"16px","padding-top":"10px","text-align":"center"}),
+                    html.Div(dcc.Dropdown(id='dest2', value = ""), style={"padding":"10px 20px","width":"100px"}),
+                ], style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
+                html.Div(id = 'airportTable'),
                 ])
             ),
         ])
@@ -502,13 +523,15 @@ def output_pie(contents, filename):
                 names = 'Status',
                 title = "% of departures predicted to delay",
             )
+            plot_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label')
             arr_prop = sum(pred_df.arr_delay > 0) / len(pred_df) * 100
             plot_arr = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [arr_prop, 100 - arr_prop]}),
                 values = 'Proportion', 
                 names = 'Status',
                 title = "% of arrival predicted to delay",
             )
-            children = html.Div(children = [dcc.Graph(figure=plot_dep), dcc.Graph(figure=plot_arr)])
+            plot_arr.update_traces(textposition = 'outside' , textinfo = 'percent+label')
+            children = html.Div(children = [dcc.Graph(figure=plot_dep), dcc.Graph(figure=plot_arr)],style={"display":"flex","align-items":"center","justify-content":"center"})
     return children
 
 @app.callback(
@@ -529,6 +552,7 @@ def output_table(contents, filename):
             table = html.Div("No valid rows.")
         else:
             table =  html.Div([
+                html.H3("Predictions for " + filename),
                 dash_table.DataTable(
                     data = pred_df.to_dict('records'),
                     columns = [{'name': i, 'id': i} for i in pred_df.columns],
@@ -536,162 +560,121 @@ def output_table(contents, filename):
                     page_current= 0,
                     page_size= 10,
                 ),
-                html.Hr(),  # horizontal line
             ])
     return table
 
 @app.callback(
-    Output(component_id='pred2',
-    component_property='children'),
+    Output('orig2','options'),
+    Input('orig2','value')
+)
+def update_orig_dd2(d):
+    orig_options = airport_pairs.origin_airport_code.unique().tolist()
+    return sorted(orig_options)
+
+@app.callback(
+    Output('dest2','options'),
+    Input('dest2','value')
+)
+def update_dest_dd2(orig):
+    dest_options = airport_pairs.dest_airport_code.unique()
+    return sorted(dest_options)
+
+@app.callback(
+    Output("airportTable", "children"),
     Input(component_id='orig2',
     component_property='value'),
     Input(component_id='dest2',
     component_property='value'),
-    Input(component_id='carrier2',
-    component_property='value')
 )
 
-def get_pred2(orig2, dest2, carrier2):
-    return_line = "Please fill in all the fields below."
-    if all([orig2, dest2, carrier2]):
-        today = date.today()
-        year, month, dayofweek = today.year, today.month, today.weekday()
-        
-        params = {
-            'access_key': api_key,
-            'dep_iata': orig2,
-            'arr_iata': dest2,
-            'airline_iata': carrier2,
-        }
+def airport_table(orig2, dest2):
+    try:
+        if orig2 == '':
+            if dest2:
+                params = {
+                'access_key': api_key,
+                'arr_iata': dest2,
+                }
+            else:
+                return html.Div(["No query selected."]) 
+        elif orig2:
+            if dest2:
+                params = {
+                'access_key': api_key,
+                'arr_iata': dest2,
+                'dep_iata': orig2
+                }
+            else:
+                params = {
+                        'access_key': api_key,
+                        'dep_iata': orig2,
+                    }
         api_result = requests.get('http://api.aviationstack.com/v1/flights', params)
         api_response = api_result.json()
         if len(api_response['data']) == 0:
-            return ['No data available', html.Br(), 'No data available']
+            return html.Div(["No data available."])    
         else:
-            flight = api_response['data'][0]
-            dep = int(flight['departure']['scheduled'][11:13])
-            arr = int(flight['arrival']['scheduled'][11:13])
-            dep = dep%24
-            arr = arr%24
-            dist = get_distance(airport_pairs, orig2, dest2)
-            return_line = [dep, html.Br(), arr]
-            param1 = {'yr': year, 'mon':month, 'day_of_week': dayofweek, 
-            'dep_hour':dep,'arr_hour':arr, 'u_carrier': carrier2,
-            'origin_airport_code':orig2, 'dest_airport_code': dest2, 
-            'distance_grp':dist}
+            arrival_iata = []
+            departure_iata = []
+            scheduled_arrival = []
+            scheduled_departure = []
+            airline_iata = []
+            arr_delay_lst = []
+            dep_delay_lst = []
+            df = pd.DataFrame()
+
+            for flight in api_response['data']:
+                arrival_iata.append(flight['arrival']['iata'])
+                departure_iata.append(flight['departure']['iata'])
+                scheduled_arrival.append(flight['arrival']['scheduled'])
+                scheduled_departure.append(flight['departure']['scheduled'])
+                airline_iata.append(flight['airline']['name'])
+                arr_delay, dep_delay = generate_predictions(flight)
+                arr_delay_lst.append(arr_delay)
+                dep_delay_lst.append(dep_delay)
+
+            df['Departure'] = departure_iata
+            df['Arrival'] = arrival_iata
+            df['Airline Name'] = airline_iata
+            df['Scheduled Departure'] = scheduled_departure
+            df['Scheduled Arrival'] = scheduled_arrival
+            df['Arrival Delay'] = arr_delay_lst
+            df['Departure Delay'] = dep_delay_lst
             
-            
-            delay = requests.get(flask_url, params=param1).json()
-            if max(float(delay['arr']), 0) == 0:
-                arr_return_line = "The arrival will not delay."
-            else: 
-                arr_return_line = "The arrival will delay by " + "{:.3f}".format(float(delay['arr'])) + " minutes."
-            if max(float(delay['dep']), 0) == 0:
-                dep_return_line = "The departure will not delay."
-            else: 
-                dep_return_line = "The departure will delay by " + "{:.3f}".format(float(delay['dep'])) + " minutes."            
+            table =  html.Div([
+                    dash_table.DataTable(
+                        data = df.to_dict('records'),
+                        columns = [{'name': i, 'id': i} for i in df.columns],
+                        sort_action="native",
+                        page_current= 0,
+                        page_size= 10,
+                    ),
+                    html.Hr(),  # horizontal line
+                ])
+            return table
+    except:
+        return html.Div(["No data available"])  
 
-            "{:.3f}".format
-            return_line = [dep_return_line , html.Br(), arr_return_line]
-            
-    return return_line
-
-# callback to change destination dropdown
-@app.callback(
-    Output('dest2','options'),
-    Input('orig2','value')
-)
-def update_dest_dd2(orig2):
-    dest_options = airport_pairs.dest_airport_code.unique()
-    if orig2:
-        dest_options = airport_pairs[airport_pairs.origin_airport_code == orig2][
-            "dest_airport_code"
-        ].tolist()
-    return sorted(dest_options)
-
-# callback to change origin dropdown
-@app.callback(
-    Output('orig2','options'),
-    Input('dest2','value')
-)
-def update_orig_dd2(dest2):
-    orig_options = airport_pairs.origin_airport_code.unique().tolist()
-    if dest2:
-        orig_options = airport_pairs[airport_pairs.dest_airport_code == dest2][
-            "origin_airport_code"
-        ].tolist()
-    return sorted(orig_options)
-
-@app.callback(
-    Output('orig3','options'),
-    Input('orig3','value')
-)
-def update_orig_dd3(d):
-    orig_options = airport_pairs.origin_airport_code.unique().tolist()
-    return sorted(orig_options)
-
-@app.callback(
-    Output('orig3','options'),
-    Input('orig3','value')
-)
-def update_orig_dd3(d):
-    orig_options = airport_pairs.origin_airport_code.unique().tolist()
-    return sorted(orig_options)
-
-@app.callback(
-    Output('dest3','options'),
-    Input('dest3','value')
-)
-def update_dest_dd3(dest3):
-    dest_options = airport_pairs.dest_airport_code.unique()
-    return sorted(dest_options)
-
-def airport_table(orig3):
-    params = {
-        'access_key': api_key,
-        'dep_iata': orig3,
-    }
-    api_result = requests.get('http://api.aviationstack.com/v1/flights', params)
-    api_response = api_result.json()
-    if len(api_response['data']) == 0:
-        return html.Div(["No data available."])    
-    else:
-        arrival_iata = []
-        departure_iata = []
-        scheduled_arrival = []
-        scheduled_departure = []
-        airline_iata = []
-        df = pd.DataFrame()
-
-        for flight in api_response['data']:
-            arrival_iata.append(flight['arrival']['iata'])
-            departure_iata.append(flight['departure']['iata'])
-            scheduled_arrival.append(flight['arrival']['scheduled'])
-            scheduled_departure.append(flight['departure']['scheduled'])
-            airline_iata.append(flight['airline']['name'])
-        df['Departure'] = departure_iata
-        df['Arrival'] = arrival_iata
-        df['Airline Name'] = airline_iata
-        df['Scheduled Departure'] = scheduled_departure
-        df['Scheduled Arrival'] = scheduled_arrival
-        
-        table =  html.Div([
-                dash_table.DataTable(
-                    data = df.to_dict('records'),
-                    columns = [{'name': i, 'id': i} for i in df.columns],
-                    sort_action="native",
-                    page_current= 0,
-                    page_size= 10,
-                ),
-                html.Hr(),  # horizontal line
-            ])
-        return table
-
-
-
-
-
-
+def generate_predictions(flight):
+    try:
+        today = date.today()
+        year, month, dayofweek = today.year, today.month, today.weekday()
+        dep = int(flight['departure']['scheduled'][11:13])
+        arr = int(flight['arrival']['scheduled'][11:13])
+        dep = dep%24
+        arr = arr%24
+        dist = get_distance(airport_pairs, flight['departure']['iata'], flight['arrival']['iata'])
+        param1 = {'yr': year, 'mon':month, 'day_of_week': dayofweek, 
+        'dep_hour':dep,'arr_hour':arr, 'u_carrier': flight['airline']['iata'],
+        'origin_airport_code':flight['departure']['iata'], 'dest_airport_code': flight['arrival']['iata'], 
+        'distance_grp':dist}
+                    
+        delay = requests.get(flask_url, params=param1).json()
+        arr_delay = "{:.3f}".format(float(delay['arr']))
+        dep_delay = "{:.3f}".format(float(delay['dep']))
+        return(arr_delay, dep_delay)
+    except: 
+        return ["No data available", "No data available"]
 
 if __name__ == '__main__':
     app.run_server(debug=True)

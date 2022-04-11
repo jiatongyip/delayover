@@ -17,7 +17,7 @@ import cufflinks as cf
 flask_url = 'http://127.0.0.1:5000/prediction'
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
-api_key = 'da5e2fca806ad3496172e27dd9c53916'
+api_key = '59a5613063b8284d452cd698cbde10d7'
 
 #reading the data needed
 airport_pairs = pd.read_csv("data/airport_pairs.csv")
@@ -217,20 +217,12 @@ app.layout = html.Div(
             children=html.Div([
                 html.Div(html.H1('Real Time API from AviationStack'), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div([
-                    html.Div(html.H2("Select an Airport:"), style={"padding-right":"5px"}),
-                    html.Div(dcc.Dropdown(id='orig3', value = "DAB"), style={"padding":"10px 20px","width":"100px"}),
-                    html.Div(id = 'airportTable')
-                ]),
-                html.Div(html.H1("Select the options to start predicting"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div([
                     html.Div(html.H2("Select Origin:"), style={"padding-right":"5px"}),
-                    html.Div(dcc.Dropdown(id='orig2', value = "DAB"), style={"padding":"10px 20px","width":"100px"}),
+                    html.Div(dcc.Dropdown(id='orig2', value = ""), style={"padding":"10px 20px","width":"100px"}),
                     html.Div(html.H2("Select Destination:"), style={"padding-left":"20px","padding-right":"5px"}),
-                    html.Div(dcc.Dropdown(id='dest2', value = "ATL"), style={"padding":"10px 20px","width":"100px"}),
-                    html.Div(html.H2("Select Carrier:"), style={"padding-left":"20px","padding-right":"5px"}),
-                    html.Div(dcc.Dropdown(id='carrier2', value = 'DL', options=options_dict['carrier']),style={"padding":"10px 20px","width":"200px"}),
-                    ], style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(html.H2(id='pred2'), style={"font-size":"16px","padding-top":"10px","text-align":"center"}),
+                    html.Div(dcc.Dropdown(id='dest2', value = ""), style={"padding":"10px 20px","width":"100px"}),
+                ], style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
+                html.Div(id = 'airportTable'),
                 ])
             ),
         ])
@@ -572,141 +564,117 @@ def output_table(contents, filename):
     return table
 
 @app.callback(
-    Output(component_id='pred2',
-    component_property='children'),
+    Output('orig2','options'),
+    Input('orig2','value')
+)
+def update_orig_dd2(d):
+    orig_options = airport_pairs.origin_airport_code.unique().tolist()
+    return sorted(orig_options)
+
+@app.callback(
+    Output('dest2','options'),
+    Input('dest2','value')
+)
+def update_dest_dd2(orig):
+    dest_options = airport_pairs.dest_airport_code.unique()
+    return sorted(dest_options)
+
+@app.callback(
+    Output("airportTable", "children"),
     Input(component_id='orig2',
     component_property='value'),
     Input(component_id='dest2',
     component_property='value'),
-    Input(component_id='carrier2',
-    component_property='value')
 )
 
-def get_pred2(orig2, dest2, carrier2):
-    return_line = "Please fill in all the fields below."
-    if all([orig2, dest2, carrier2]):
-        today = date.today()
-        year, month, dayofweek = today.year, today.month, today.weekday()
-        
-        params = {
-            'access_key': api_key,
-            'dep_iata': orig2,
-            'arr_iata': dest2,
-            'airline_iata': carrier2,
-        }
+def airport_table(orig2, dest2):
+    try:
+        if orig2 == '':
+            if dest2:
+                params = {
+                'access_key': api_key,
+                'arr_iata': dest2,
+                }
+            else:
+                return html.Div(["No query selected."]) 
+        elif orig2:
+            if dest2:
+                params = {
+                'access_key': api_key,
+                'arr_iata': dest2,
+                'dep_iata': orig2
+                }
+            else:
+                params = {
+                        'access_key': api_key,
+                        'dep_iata': orig2,
+                    }
         api_result = requests.get('http://api.aviationstack.com/v1/flights', params)
         api_response = api_result.json()
         if len(api_response['data']) == 0:
-            return ['No data available', html.Br(), 'No data available']
+            return html.Div(["No data available."])    
         else:
-            flight = api_response['data'][0]
-            dep = int(flight['departure']['scheduled'][11:13])
-            arr = int(flight['arrival']['scheduled'][11:13])
-            dep = dep%24
-            arr = arr%24
-            dist = get_distance(airport_pairs, orig2, dest2)
-            return_line = [dep, html.Br(), arr]
-            param1 = {'yr': year, 'mon':month, 'day_of_week': dayofweek, 
-            'dep_hour':dep,'arr_hour':arr, 'u_carrier': carrier2,
-            'origin_airport_code':orig2, 'dest_airport_code': dest2, 
-            'distance_grp':dist}
+            arrival_iata = []
+            departure_iata = []
+            scheduled_arrival = []
+            scheduled_departure = []
+            airline_iata = []
+            arr_delay_lst = []
+            dep_delay_lst = []
+            df = pd.DataFrame()
+
+            for flight in api_response['data']:
+                arrival_iata.append(flight['arrival']['iata'])
+                departure_iata.append(flight['departure']['iata'])
+                scheduled_arrival.append(flight['arrival']['scheduled'])
+                scheduled_departure.append(flight['departure']['scheduled'])
+                airline_iata.append(flight['airline']['name'])
+                arr_delay, dep_delay = generate_predictions(flight)
+                arr_delay_lst.append(arr_delay)
+                dep_delay_lst.append(dep_delay)
+
+            df['Departure'] = departure_iata
+            df['Arrival'] = arrival_iata
+            df['Airline Name'] = airline_iata
+            df['Scheduled Departure'] = scheduled_departure
+            df['Scheduled Arrival'] = scheduled_arrival
+            df['Arrival Delay'] = arr_delay_lst
+            df['Departure Delay'] = dep_delay_lst
             
-            
-            delay = requests.get(flask_url, params=param1).json()
-            if max(float(delay['arr']), 0) == 0:
-                arr_return_line = "The arrival will not delay."
-            else: 
-                arr_return_line = "The arrival will delay by " + "{:.3f}".format(float(delay['arr'])) + " minutes."
-            if max(float(delay['dep']), 0) == 0:
-                dep_return_line = "The departure will not delay."
-            else: 
-                dep_return_line = "The departure will delay by " + "{:.3f}".format(float(delay['dep'])) + " minutes."            
+            table =  html.Div([
+                    dash_table.DataTable(
+                        data = df.to_dict('records'),
+                        columns = [{'name': i, 'id': i} for i in df.columns],
+                        sort_action="native",
+                        page_current= 0,
+                        page_size= 10,
+                    ),
+                    html.Hr(),  # horizontal line
+                ])
+            return table
+    except:
+        return html.Div(["No data available"])  
 
-            "{:.3f}".format
-            return_line = [dep_return_line , html.Br(), arr_return_line]
-            
-    return return_line
-
-# callback to change destination dropdown
-@app.callback(
-    Output('dest2','options'),
-    Input('orig2','value')
-)
-def update_dest_dd2(orig2):
-    dest_options = airport_pairs.dest_airport_code.unique()
-    if orig2:
-        dest_options = airport_pairs[airport_pairs.origin_airport_code == orig2][
-            "dest_airport_code"
-        ].tolist()
-    return sorted(dest_options)
-
-# callback to change origin dropdown
-@app.callback(
-    Output('orig2','options'),
-    Input('dest2','value')
-)
-def update_orig_dd2(dest2):
-    orig_options = airport_pairs.origin_airport_code.unique().tolist()
-    if dest2:
-        orig_options = airport_pairs[airport_pairs.dest_airport_code == dest2][
-            "origin_airport_code"
-        ].tolist()
-    return sorted(orig_options)
-
-@app.callback(
-    Output('orig3','options'),
-    Input('orig3','value')
-)
-def update_orig_dd3(d):
-    orig_options = airport_pairs.origin_airport_code.unique().tolist()
-    return sorted(orig_options)
-
-@app.callback(
-    Output("airportTable", "children"),
-    Input(component_id='orig3',
-    component_property='value'),
-)
-
-def airport_table(orig3):
-    params = {
-        'access_key': api_key,
-        'dep_iata': orig3,
-    }
-    api_result = requests.get('http://api.aviationstack.com/v1/flights', params)
-    api_response = api_result.json()
-    if len(api_response['data']) == 0:
-        return html.Div(["No data available."])    
-    else:
-        arrival_iata = []
-        departure_iata = []
-        scheduled_arrival = []
-        scheduled_departure = []
-        airline_iata = []
-        df = pd.DataFrame()
-
-        for flight in api_response['data']:
-            arrival_iata.append(flight['arrival']['iata'])
-            departure_iata.append(flight['departure']['iata'])
-            scheduled_arrival.append(flight['arrival']['scheduled'])
-            scheduled_departure.append(flight['departure']['scheduled'])
-            airline_iata.append(flight['airline']['name'])
-        df['Departure'] = departure_iata
-        df['Arrival'] = arrival_iata
-        df['Airline Name'] = airline_iata
-        df['Scheduled Departure'] = scheduled_departure
-        df['Scheduled Arrival'] = scheduled_arrival
-        
-        table =  html.Div([
-                dash_table.DataTable(
-                    data = df.to_dict('records'),
-                    columns = [{'name': i, 'id': i} for i in df.columns],
-                    sort_action="native",
-                    page_current= 0,
-                    page_size= 10,
-                ),
-                html.Hr(),  # horizontal line
-            ])
-        return table
+def generate_predictions(flight):
+    try:
+        today = date.today()
+        year, month, dayofweek = today.year, today.month, today.weekday()
+        dep = int(flight['departure']['scheduled'][11:13])
+        arr = int(flight['arrival']['scheduled'][11:13])
+        dep = dep%24
+        arr = arr%24
+        dist = get_distance(airport_pairs, flight['departure']['iata'], flight['arrival']['iata'])
+        param1 = {'yr': year, 'mon':month, 'day_of_week': dayofweek, 
+        'dep_hour':dep,'arr_hour':arr, 'u_carrier': flight['airline']['iata'],
+        'origin_airport_code':flight['departure']['iata'], 'dest_airport_code': flight['arrival']['iata'], 
+        'distance_grp':dist}
+                    
+        delay = requests.get(flask_url, params=param1).json()
+        arr_delay = "{:.3f}".format(float(delay['arr']))
+        dep_delay = "{:.3f}".format(float(delay['dep']))
+        return(arr_delay, dep_delay)
+    except: 
+        return ["No data available", "No data available"]
 
 
 if __name__ == '__main__':
