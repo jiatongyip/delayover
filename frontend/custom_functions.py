@@ -1,4 +1,5 @@
 import plotly.express as px
+import plotly.graph_objs as go
 import pandas as pd
 from datetime import date
 import math
@@ -30,21 +31,34 @@ def gen_line_plots(dep_df, arr_df, col_list):
         for (col, val) in col_list:
             dep_df = dep_df[dep_df[col] == val]
             arr_df = arr_df[arr_df[col] == val]
+        dep_df = dep_df[dep_df.yr >= 2010]
+        arr_df = arr_df[arr_df.yr >= 2010]
 
         dep_df['yr_mon'] = dep_df.yr.astype(str) + "-" + dep_df.mon.map("{:02}".format)
         dep_df['type'] = "departure"
         
         arr_df['yr_mon'] = arr_df.yr.astype(str) + "-" + arr_df.mon.map("{:02}".format)
         arr_df['type'] = "arrival"
-        
-        df = pd.concat([dep_df[["yr_mon", "mean", "type"]], 
-                        arr_df[["yr_mon", "mean", "type"]]])
-        line_plot = px.line(
-            df, x = "yr_mon", y = "mean", 
-            color = "type", markers = True,
-            labels = {'yr_mon': "Time", 'mean': 'Mean delay', 'type': 'Type'})
 
-        return line_plot
+        fig = go.Figure([
+            go.Scatter(name='Departure', x=dep_df.yr_mon, y=dep_df['mean'], mode='lines', line=dict(color='#003676'), legendgroup = "dep"),
+            go.Scatter(name='Dep 75th', x=dep_df.yr_mon, y=dep_df['q75'], mode='lines', marker=dict(color="#444"),
+                line=dict(width=0), showlegend=False, legendgroup = "dep"),
+            go.Scatter(name='Dep 25th', x=dep_df.yr_mon, y=dep_df['q25'], marker=dict(color="#444"), line=dict(width=0),
+                mode='lines', fillcolor='rgba(201,219,240,0.8)', fill='tonexty', showlegend=False, legendgroup = "dep"),
+            go.Scatter(name='Arrival', x=arr_df.yr_mon, y=arr_df['mean'], mode='lines', line=dict(color='#FFC90B'), legendgroup = "arr"),
+            go.Scatter(name='Arr 75th', x=arr_df.yr_mon, y=arr_df['q75'], mode='lines', marker=dict(color="#444"),
+                line=dict(width=0), showlegend=False, legendgroup = "arr"),
+            go.Scatter(name='Arr 25th', x=arr_df.yr_mon, y=arr_df['q25'], marker=dict(color="#444"), line=dict(width=0),
+                mode='lines', fillcolor='rgba(252, 219, 101,0.3)', fill='tonexty', showlegend=False, legendgroup = "arr")           
+        ])
+        fig.update_layout(
+            yaxis_title='Delay (mins)',
+            title='Departure and Arrival Delays from 2010 to 2012',
+            hovermode='x unified',
+            xaxis=dict(tickformat='%b %Y',)
+        )
+        return fig
 
 def generate_pie_bar(dep_df, arr_df, col_list):
         col_list += [("yr", 2012)]
@@ -76,8 +90,9 @@ def generate_pie_bar(dep_df, arr_df, col_list):
             #     names = 'Status',
             #     title = "% of delay in 2012 departures",
             # )
-            bar_plot_dep = px.bar(dep_df, x="mon", y=["delayed", "not delayed"], title="% breakdown for departure delay in each month",
-                            labels = {'mon': "Month in 2012", 'value': 'Proportion', 'variable': 'Status'})
+            bar_plot_dep = px.bar(dep_df, x="mon", y=["delayed", "not delayed"], title="% of departure delay",
+                            labels = {'mon': "Month", 'value': 'Proportion', 'variable': 'Status'},
+                            color_discrete_map={'delayed': '#003676','not delayed': '#FFC90B'})
             bar_plot_dep.update_layout(
                 xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         "tickvals": list(range(1, 13))},
@@ -91,8 +106,9 @@ def generate_pie_bar(dep_df, arr_df, col_list):
             #     names = 'Status',
             #     title = "% of delay in 2012 arrivals",
             # )
-            bar_plot_arr = px.bar(arr_df, x="mon", y=["delayed", "not delayed"], title="% breakdown for arrival delay in each month",
-                            labels = {'mon': "Month in 2012", 'value': 'Proportion', 'variable': 'Status'})
+            bar_plot_arr = px.bar(arr_df, x="mon", y=["delayed", "not delayed"], title="% of arrival delay",
+                            labels = {'mon': "Month", 'value': 'Proportion', 'variable': 'Status'},
+                            color_discrete_map={'delayed': '#003676','not delayed': '#FFC90B'})
             bar_plot_arr.update_layout(
                 xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         "tickvals": list(range(1, 13))},
@@ -220,14 +236,14 @@ def read_upload_data(contents, filename):
 def get_tab_children(tab):
     ls = [
         html.H1(id = tab + "_line_title", style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
-        html.H3("The plot below shows how the delays vary in 2011 and 2012."),
+        html.H3("The plot below shows how the delays vary in 2010, 2011 and 2012."),
         dcc.Graph(id=tab + '_line'),
-        html.H3("Let's break it down to observe the patterns in different months."),
+        html.H3("Let's break it down to observe the patterns in the different months of 2012."),
         # html.H1(" Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
         # html.Div(id=tab + '_pie', style={"display":"flex","align-items":"center","justify-content":"center"}),
-        html.H1("Proportion of delays by months", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+        html.H1("Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
         html.Div(id=tab + '_bar', style={"display":"flex","align-items":"center","justify-content":"center"}),
-        html.H1("Types of delays in 2012 by month", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+        html.H1("Severity of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
         html.Div(id=tab + '_hist_delay', style={"display":"flex","align-items":"center","justify-content":"center"})
         ]
     return ls

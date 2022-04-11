@@ -98,7 +98,7 @@ app.layout = html.Div(
                     ], style={"font-family": 'Poppins,sans-serif'},
                 )
             ,),
-            dcc.Tab(className="custom-tab icon2", selected_className='custom-tab--selected', label='Same src and dest',  
+            dcc.Tab(className="custom-tab icon2", selected_className='custom-tab--selected', label='Same airports',  
             children=html.Div(get_tab_children("orig_dest")),
             ),
             dcc.Tab(className="custom-tab icon3", selected_className='custom-tab--selected', label='Same carrier', 
@@ -110,7 +110,7 @@ app.layout = html.Div(
             dcc.Tab(className="custom-tab icon5", selected_className='custom-tab--selected', label='Same arrival time', 
             children=html.Div(get_tab_children("arrh"))
             ),
-            dcc.Tab(className="custom-tab icon6", selected_className='custom-tab--selected', label='Upload files', 
+            dcc.Tab(className="custom-tab icon6", selected_className='custom-tab--selected', label='Upload file', 
             children=html.Div([
 
                 html.Div([
@@ -152,7 +152,7 @@ app.layout = html.Div(
                     ),
                     html.Hr(),  # horizontal line
                 ], style={"padding-top":"40px","width":"500px","margin":"0 auto","text-align":'center'}),
-                html.I("An example of a csv you may upload"),
+                html.I("An example of a csv file you may upload"),
                 html.H2("You may refer to the IATA for the supported carriers below.", style={"padding-top":"30px"}),
                 html.Div([
                     dash_table.DataTable(
@@ -480,14 +480,14 @@ def output_pie(contents, filename):
                 names = 'Status',
                 title = "% of departures predicted to delay",
             )
-            plot_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label')
+            plot_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label', marker = {'colors': ['#003676', '#FFC90B']})
             arr_prop = sum(pred_df.arr_delay > 0) / len(pred_df) * 100
             plot_arr = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [arr_prop, 100 - arr_prop]}),
                 values = 'Proportion', 
                 names = 'Status',
-                title = "% of arrival predicted to delay",
+                title = "% of arrivals predicted to delay",
             )
-            plot_arr.update_traces(textposition = 'outside' , textinfo = 'percent+label')
+            plot_arr.update_traces(textposition = 'outside' , textinfo = 'percent+label', marker = {'colors': ['#003676', '#FFC90B']})
             children = html.Div(children = [dcc.Graph(figure=plot_dep), dcc.Graph(figure=plot_arr)],style={"display":"flex","align-items":"center","justify-content":"center"})
     return children
 
