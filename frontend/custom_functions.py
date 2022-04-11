@@ -6,6 +6,8 @@ import datetime
 import requests
 import base64
 import io
+from dash import Dash, dcc, html, no_update, dash_table
+
 flask_url = 'http://127.0.0.1:5000/prediction'
 
 with open("data/allowable_values.txt", "r") as file:
@@ -56,24 +58,24 @@ def generate_pie_bar(dep_df, arr_df, col_list):
         arr_df["not delayed"] = 100 - arr_df["delayed"]
 
         try:
-            pie_plot_dep = px.pie()
+#            pie_plot_dep = px.pie()
             bar_plot_dep = px.bar()
-            pie_plot_arr = px.pie()
-            bar_plot_arr = px.pie()
+#            pie_plot_arr = px.pie()
+            bar_plot_arr = px.bar()
         except:
-            pie_plot_dep = px.pie()
+#            pie_plot_dep = px.pie()
             bar_plot_dep = px.bar()
-            pie_plot_arr = px.pie()
-            bar_plot_arr = px.pie()
+#            pie_plot_arr = px.pie()
+            bar_plot_arr = px.bar()
 
         if not sum(dep_df['count']) == 0:
             # generate delay proportion for departure in 2012
-            dep_yr_prop = sum(dep_df['count'] * dep_df['prop']) / sum(dep_df['count']) * 100
-            pie_plot_dep = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [dep_yr_prop, 100 - dep_yr_prop]}),
-                values = 'Proportion', 
-                names = 'Status',
-                title = "% of delay in 2012 departures",
-            )
+            # dep_yr_prop = sum(dep_df['count'] * dep_df['prop']) / sum(dep_df['count']) * 100
+            # pie_plot_dep = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [dep_yr_prop, 100 - dep_yr_prop]}),
+            #     values = 'Proportion', 
+            #     names = 'Status',
+            #     title = "% of delay in 2012 departures",
+            # )
             bar_plot_dep = px.bar(dep_df, x="mon", y=["delayed", "not delayed"], title="% breakdown for departure delay in each month",
                             labels = {'mon': "Month in 2012", 'value': 'Proportion', 'variable': 'Status'})
             bar_plot_dep.update_layout(
@@ -83,12 +85,12 @@ def generate_pie_bar(dep_df, arr_df, col_list):
             )
         if not sum(arr_df['count']) == 0:
             # generate arrival proportion for departure in 2012        
-            arr_yr_prop = sum(arr_df['count'] * arr_df['prop']) / sum(arr_df['count']) * 100
-            pie_plot_arr = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [arr_yr_prop, 100 - arr_yr_prop]}),
-                values = 'Proportion', 
-                names = 'Status',
-                title = "% of delay in 2012 arrivals",
-            )
+            # arr_yr_prop = sum(arr_df['count'] * arr_df['prop']) / sum(arr_df['count']) * 100
+            # pie_plot_arr = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [arr_yr_prop, 100 - arr_yr_prop]}),
+            #     values = 'Proportion', 
+            #     names = 'Status',
+            #     title = "% of delay in 2012 arrivals",
+            # )
             bar_plot_arr = px.bar(arr_df, x="mon", y=["delayed", "not delayed"], title="% breakdown for arrival delay in each month",
                             labels = {'mon': "Month in 2012", 'value': 'Proportion', 'variable': 'Status'})
             bar_plot_arr.update_layout(
@@ -96,9 +98,11 @@ def generate_pie_bar(dep_df, arr_df, col_list):
                         "tickvals": list(range(1, 13))},
                 legend={'title_text':'Status'}
             )
-        pie_plot_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label')
-        pie_plot_arr.update_traces(textposition = 'outside' , textinfo = 'percent+label')
-        return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+        # pie_plot_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label')
+        # pie_plot_arr.update_traces(textposition = 'outside' , textinfo = 'percent+label')
+        return (
+            # pie_plot_dep, pie_plot_arr, 
+            bar_plot_dep, bar_plot_arr)
 
 def update_delay_type(dep_df, arr_df, col_list):
         for (col, val) in col_list:
@@ -212,3 +216,18 @@ def read_upload_data(contents, filename):
         # Assume that the user uploaded an excel file
         df = pd.read_excel(io.BytesIO(decoded), header=None)
     return df
+
+def get_tab_children(tab):
+    ls = [
+        html.H1(id = tab + "_line_title", style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
+        html.H3("The plot below shows how the delays vary in 2011 and 2012."),
+        dcc.Graph(id=tab + '_line'),
+        html.H3("Let's break it down to observe the patterns in different months."),
+        # html.H1(" Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+        # html.Div(id=tab + '_pie', style={"display":"flex","align-items":"center","justify-content":"center"}),
+        html.H1("Proportion of delays by months", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+        html.Div(id=tab + '_bar', style={"display":"flex","align-items":"center","justify-content":"center"}),
+        html.H1("Historical breakdown of delays by years", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+        html.Div(id=tab + '_hist_delay', style={"display":"flex","align-items":"center","justify-content":"center"})
+        ]
+    return ls

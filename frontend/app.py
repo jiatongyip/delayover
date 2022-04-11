@@ -11,7 +11,9 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import requests
 import plotly.graph_objs as go
-from custom_functions import get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, update_delay_type, generate_pred_table, read_upload_data
+from custom_functions import (get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, 
+update_delay_type, generate_pred_table, read_upload_data, get_tab_children)
+
 import cufflinks as cf
 
 flask_url = 'http://127.0.0.1:5000/prediction'
@@ -37,6 +39,8 @@ with open("data/carrier_dict.txt", "r") as file:
     carrier_dict = eval(file.read())
 with open("data/allowable_values.txt", "r") as file:
     allowable_values = eval(file.read())
+
+
 # app
 app.layout = html.Div(
     [
@@ -94,54 +98,17 @@ app.layout = html.Div(
                     ], style={"font-family": 'Poppins,sans-serif'},
                 )
             ,),
-            dcc.Tab(className="custom-tab icon2", selected_className='custom-tab--selected', label='Same src and dest',  children=html.Div(
-                [
-                    html.H1(id = "orig_dest_line_title", style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
-                    dcc.Graph(id='orig_dest_line'),
-                    html.H1(" Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                    html.Div(id='orig_dest_pie', style={"display":"flex","align-items":"center","justify-content":"center"}
-                    ),
-                    html.H1("Proportion of delays by months", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                    html.Div(id='orig_dest_bar', style={"display":"flex","align-items":"center","justify-content":"center"}),
-                    html.H1("Historical breakdown of delays by years", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                    html.Div(id='orig_dest_hist_delay', style={"display":"flex","align-items":"center","justify-content":"center"})
-                ]),
+            dcc.Tab(className="custom-tab icon2", selected_className='custom-tab--selected', label='Same src and dest',  
+            children=html.Div(get_tab_children("orig_dest")),
             ),
             dcc.Tab(className="custom-tab icon3", selected_className='custom-tab--selected', label='Same carrier', 
-            children=html.Div([
-                html.Div(html.H1(id = "carrier_line_title"), style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
-                dcc.Graph(id='carrier_line'),
-                html.Div(html.H1("Proportion of delays in 2012"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id='carrier_pie', style={"display":"flex","justify-content":"center","align-items":"center"}),
-                html.Div(html.H1("Proportion of delays by months"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id='carrier_bar', style={"display":"flex","justify-content":"center","align-items":"center"}),
-                html.Div(html.H1("Historical breakdown of delays by years"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id='carrier_hist_delay', style={"display":"flex","justify-content":"center","align-items":"center"})
-                ,])
+            children=html.Div(get_tab_children("carrier"))
             ),
             dcc.Tab(className="custom-tab icon4", selected_className='custom-tab--selected', label='Same departure time', 
-            children=html.Div([
-                html.Div(html.H1(id = "deph_line_title"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                dcc.Graph(id='deph_line'),
-                html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id="deph_pie", style={"display":"flex","align-items":"center","justify-content":"center"}),
-                html.Div(html.H1("Proportion of delays in 2012 by months"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id="deph_bar", style={"display":"flex","justify-content":"center","align-items":"center"}),
-                html.Div(html.H1("Historical breakdown of delays by years"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id='deph_hist_delay', style={"display":"flex","justify-content":"center","align-items":"center"})
-            ])
+            children=html.Div(get_tab_children("deph"))
             ),
             dcc.Tab(className="custom-tab icon5", selected_className='custom-tab--selected', label='Same arrival time', 
-            children=html.Div([
-                html.Div(html.H1(id = "arrh_line_title"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                dcc.Graph(id='arrh_line'),
-                html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id='arrh_pie', style={"display":"flex","align-items":"center","justify-content":"center"}),
-                html.Div(html.H1("Proportion of delays by months"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id="arrh_bar", style={"display":"flex","justify-content":"center","align-items":"center"}),
-                html.Div(html.H1("Breakdown of historical delays by years"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id="arrh_hist_delay", style={"display":"flex","justify-content":"center","align-items":"center"})
-            ])
+            children=html.Div(get_tab_children("arrh"))
             ),
             dcc.Tab(className="custom-tab icon6", selected_className='custom-tab--selected', label='Upload files', 
             children=html.Div([
@@ -168,21 +135,11 @@ app.layout = html.Div(
                 ,style={"font-family": 'Poppins,sans-serif',"width":"560px","margin":"0 auto",
                 "text-align":"left","padding":"20px 30px","box-shadow": "0px 4px 4px rgba(0, 0, 0, 0.25)",'margin-bottom':"40px"
                 }),
-                
                 dcc.Upload(id = "upload_data", 
-                children = html.Div([
-                    'Drop or Select a file ', 
-                ]), 
-                style={
-                    'textAlign': 'center',"margin":"0 auto"
-                    
-                },
-                
-                className="drop",
-                multiple = False),
-                html.Div([
-                    html.Br(),
-                ]),
+                children = html.Div(['Drop or Select a file ',]), 
+                style={'textAlign': 'center',"margin":"0 auto"}, className="drop", multiple = False
+                ),
+                html.Div([html.Br(),]),
                 html.Div(id='output_table'),
                 html.Div(id = "output_pie", style={"display":"flex","justify-content":"center","align-items":"center"}),
                 html.Hr(),
@@ -194,7 +151,7 @@ app.layout = html.Div(
                         style_header={ 'background-color': 'white',"text-align":"center"}
                     ),
                     html.Hr(),  # horizontal line
-                ],style={"padding-top":"40px","width":"500px","margin":"0 auto","text-align":'center'}),
+                ], style={"padding-top":"40px","width":"500px","margin":"0 auto","text-align":'center'}),
                 html.I("An example of a csv you may upload"),
                 html.H2("You may refer to the IATA for the supported carriers below.", style={"padding-top":"30px"}),
                 html.Div([
@@ -329,21 +286,21 @@ def update_orig_dest_plot(orig, dest):
     return line_plot, line_title
 
 @app.callback(
-    Output('orig_dest_pie','children'),
+    # Output('orig_dest_pie','children'),
     Output('orig_dest_bar','children'),
     Input('orig', 'value'),
     Input('dest', 'value')
 )
 def update_orig_dest_pie(orig, dest):
-    pie_children = html.Div()
+#    pie_children = html.Div()
     bar_children = html.Div() 
 
     if all([orig, dest]):
-        pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(orig_dest_dep_df, orig_dest_arr_df, 
+        bar_plot_dep, bar_plot_arr = generate_pie_bar(orig_dest_dep_df, orig_dest_arr_df, 
                                                                               [("origin_airport_code", orig), ("dest_airport_code", dest)])
-        pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
+#        pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
         bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
-    return pie_children, bar_children
+    return bar_children
 @app.callback(
     Output('orig_dest_hist_delay','children'),
     Input('orig', 'value'),
@@ -377,18 +334,18 @@ def update_carrier_plot(carrier):
     return line_plot, line_title
 
 @app.callback(
-    Output('carrier_pie','children'),
+    # Output('carrier_pie','children'),
     Output('carrier_bar','children'),
     Input('carrier', 'value'),
     )
 def update_carrier_pie_bar(carrier):
-    pie_children = html.Div()
+    # pie_children = html.Div()
     bar_children = html.Div()         
     if carrier:
-        pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(carrier_dep_df, carrier_arr_df, [("u_carrier", carrier)])
-        pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
+        bar_plot_dep, bar_plot_arr = generate_pie_bar(carrier_dep_df, carrier_arr_df, [("u_carrier", carrier)])
+        # pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
         bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
-    return pie_children, bar_children
+    return bar_children
 
 @app.callback(
     Output('carrier_hist_delay','children'),
@@ -424,20 +381,20 @@ def update_deph_plot(time_slider):
     return line_plot, line_title
 
 @app.callback(
-    Output('deph_pie','children'),
+#    Output('deph_pie','children'),
     Output('deph_bar','children'),
     [Input('time_slider', 'value')]
     )
 def update_deph_pie_bar(time_slider):
-    pie_children = html.Div()
+    # pie_children = html.Div()
     bar_children = html.Div()      
     if time_slider:
         dep, arr = time_slider
         dep = dep%24
-        pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(deph_dep_df, deph_arr_df, [("dep_hour", dep)])
-        pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
+        bar_plot_dep, bar_plot_arr = generate_pie_bar(deph_dep_df, deph_arr_df, [("dep_hour", dep)])
+        # pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
         bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
-    return pie_children, bar_children
+    return bar_children
 
 @app.callback(
     Output('deph_hist_delay','children'),
@@ -473,21 +430,21 @@ def update_arrh_plot(time_slider):
     return line_plot, line_title
 
 @app.callback(
-    Output('arrh_pie','children'),
+    # Output('arrh_pie','children'),
     Output('arrh_bar','children'),
     [Input('time_slider', 'value')]
     )
 
 def update_arrh_pie_bar(time_slider):
-    pie_children = html.Div()
+    # pie_children = html.Div()
     bar_children = html.Div()      
     if time_slider:
         dep, arr = time_slider
         arr = arr%24        
-        pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(arrh_dep_df, arrh_arr_df, [("arr_hour", arr)])
-        pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
+        bar_plot_dep, bar_plot_arr = generate_pie_bar(arrh_dep_df, arrh_arr_df, [("arr_hour", arr)])
+        # pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
         bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
-    return pie_children, bar_children
+    return bar_children
 @app.callback(
     Output('arrh_hist_delay','children'),
     [Input('time_slider', 'value')]
