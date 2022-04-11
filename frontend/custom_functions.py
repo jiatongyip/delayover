@@ -4,9 +4,9 @@ from datetime import date
 import math
 import datetime
 import requests
+import base64
+import io
 flask_url = 'http://127.0.0.1:5000/prediction'
-from dash import Dash, dcc, html, no_update, dash_table
-
 
 with open("data/allowable_values.txt", "r") as file:
     allowable_values = eval(file.read())
@@ -55,10 +55,18 @@ def generate_pie_bar(dep_df, arr_df, col_list):
         arr_df["delayed"] = arr_df["prop"] * 100
         arr_df["not delayed"] = 100 - arr_df["delayed"]
 
-        if sum(dep_df['count']) == 0:
+        try:
             pie_plot_dep = px.pie()
             bar_plot_dep = px.bar()
-        else:
+            pie_plot_arr = px.pie()
+            bar_plot_arr = px.pie()
+        except:
+            pie_plot_dep = px.pie()
+            bar_plot_dep = px.bar()
+            pie_plot_arr = px.pie()
+            bar_plot_arr = px.pie()
+
+        if not sum(dep_df['count']) == 0:
             # generate delay proportion for departure in 2012
             dep_yr_prop = sum(dep_df['count'] * dep_df['prop']) / sum(dep_df['count']) * 100
             pie_plot_dep = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [dep_yr_prop, 100 - dep_yr_prop]}),
@@ -73,10 +81,7 @@ def generate_pie_bar(dep_df, arr_df, col_list):
                         "tickvals": list(range(1, 13))},
                 legend={'title_text':'Status'}
             )
-        if sum(arr_df['count']) == 0:
-            pie_plot_arr = px.pie()
-            bar_plot_arr = px.pie()
-        else:
+        if not sum(arr_df['count']) == 0:
             # generate arrival proportion for departure in 2012        
             arr_yr_prop = sum(arr_df['count'] * arr_df['prop']) / sum(arr_df['count']) * 100
             pie_plot_arr = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [arr_yr_prop, 100 - arr_yr_prop]}),
@@ -99,35 +104,43 @@ def update_delay_type(dep_df, arr_df, col_list):
         for (col, val) in col_list:
             dep_df = dep_df[dep_df[col] == val]
             arr_df = arr_df[arr_df[col] == val]
+
+        try: 
+            hist_dep = px.histogram()
+            hist_arr = px.histogram() 
+        except:
+            hist_dep = px.histogram()
+            hist_arr = px.histogram()         
         # classify delay types for departure
         dep_df['Delay'] = pd.cut(
             x = dep_df['mean'],
-            bins = [-1*math.inf, 15, 45, math.inf],
-            labels = ["No/Slight delay: < 15 mins", "Moderate delay: 15 - 45 mins", "Severe delay: > 45 mins"]
+            bins = [-1*math.inf, 0, 15, 45, math.inf],
+            labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
         )
         hist_dep = px.histogram(dep_df, 
             x='yr', 
             color='Delay', 
             barmode='group',
-            title = "Mean departure delays over the years"
+            title = "Number of departure delays over the years",
+            category_orders={"Delay": ["No delay", "Slight delay", "Moderate delay", "Severe delay"]},
+            labels = {'yr': 'Year', 'count': 'Count'}
         )
-        
-        hist_dep.update_layout(xaxis_title="Year",  xaxis = dict(tickmode = 'linear'))
-        hist_dep.update_xaxes(ticks="inside")
+        hist_dep.update_layout(yaxis_title="Count")
         # classify delay types for arrival
         arr_df['Delay'] = pd.cut(
             x = arr_df['mean'],
-            bins = [-1*math.inf, 15, 45, math.inf],
-            labels = ["No/Slight delay: < 15 mins", "Moderate delay: 15 - 45 mins", "Severe delay: > 45 mins"]
+            bins = [-1*math.inf, 0, 15, 45, math.inf],
+            labels = ["No delay", "Slight delay", "Moderate delay", "Severe delay"]
         )
         hist_arr = px.histogram(arr_df, 
             x='yr', 
             color='Delay', 
             barmode='group',
-            title = "Mean arrival delays over the years"
+            title = "Number of arrival delays over the years",
+            category_orders={"Delay": ["No delay", "Slight delay", "Moderate delay", "Severe delay"]},
+            labels = {'yr': 'Year', 'count': 'Count'}
         )
-        hist_arr.update_layout(xaxis_title="Year",  xaxis = dict(tickmode = 'linear'))
-        hist_arr.update_xaxes(ticks="inside")
+        hist_arr.update_layout(yaxis_title="Count")
         return hist_dep, hist_arr
 
 def check_date(year, month, day):
@@ -187,3 +200,14 @@ def generate_pred_table(df, airport_pairs, allowable_values):
         pred_df.loc[len(pred_df)] = row
 
     return pred_df
+
+def read_upload_data(contents, filename):
+    content_type, content_string = contents.split(",")
+    decoded = base64.b64decode(content_string)
+    if "csv" in filename:
+        # Assume that the user uploaded a CSV file
+        df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), header=None)
+    elif "xls" in filename:
+        # Assume that the user uploaded an excel file
+        df = pd.read_excel(io.BytesIO(decoded), header=None)
+    return df

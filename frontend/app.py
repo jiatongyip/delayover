@@ -11,9 +11,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import requests
 import plotly.graph_objs as go
-from custom_functions import get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, update_delay_type, generate_pred_table
-import base64
-import io
+from custom_functions import get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, update_delay_type, generate_pred_table, read_upload_data
 import cufflinks as cf
 
 flask_url = 'http://127.0.0.1:5000/prediction'
@@ -89,7 +87,6 @@ app.layout = html.Div(
                         ),style={"padding-top":"20px"}),
                         html.Div(id='time_slider_output',style={"font-size":"17px","font-family": 'Poppins,sans-serif',"padding-top":"20px"}),
                     ], style={"font-family": 'Poppins,sans-serif'},
-
                 )
             ,),
             dcc.Tab(className="custom-tab icon2", selected_className='custom-tab--selected', label='Same src and dest',  children=html.Div(
@@ -97,21 +94,12 @@ app.layout = html.Div(
                     html.H1(id = "orig_dest_line_title", style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
                     dcc.Graph(id='orig_dest_line'),
                     html.H1(" Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                    html.Div([
-                        dcc.Graph(id='orig_dest_pie_dep'),
-                        dcc.Graph(id='orig_dest_pie_arr'),
-                    ], style={"display":"flex","align-items":"center","justify-content":"center"}
+                    html.Div(id='orig_dest_pie', style={"display":"flex","align-items":"center","justify-content":"center"}
                     ),
                     html.H1("Proportion of delays by months", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                    html.Div([
-                        dcc.Graph(id='orig_dest_bar_dep'),
-                        dcc.Graph(id='orig_dest_bar_arr'),
-                    ], style={"display":"flex","align-items":"center","justify-content":"center"}),
+                    html.Div(id='orig_dest_bar', style={"display":"flex","align-items":"center","justify-content":"center"}),
                     html.H1("Historical breakdown of delays by years", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                    html.Div([
-                        dcc.Graph(id='orig_dest_hist_delay_dep'),
-                        dcc.Graph(id='orig_dest_hist_delay_arr'),
-                    ], style={"display":"flex","align-items":"center","justify-content":"center"})
+                    html.Div(id='orig_dest_hist_delay', style={"display":"flex","align-items":"center","justify-content":"center"})
                 ]),
             ),
             dcc.Tab(className="custom-tab icon3", selected_className='custom-tab--selected', label='Same carrier', 
@@ -119,20 +107,11 @@ app.layout = html.Div(
                 html.Div(html.H1(id = "carrier_line_title"), style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
                 dcc.Graph(id='carrier_line'),
                 html.Div(html.H1("Proportion of delays in 2012"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div([
-                    dcc.Graph(id='carrier_pie_dep'),
-                    dcc.Graph(id='carrier_pie_arr'),
-                ], style={"display":"flex","justify-content":"center","align-items":"center"}),
+                html.Div(id='carrier_pie', style={"display":"flex","justify-content":"center","align-items":"center"}),
                 html.Div(html.H1("Proportion of delays by months"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div([
-                    dcc.Graph(id='carrier_bar_dep'),
-                    dcc.Graph(id='carrier_bar_arr'),
-                ], style={"display":"flex","justify-content":"center","align-items":"center"}),
+                html.Div(id='carrier_bar', style={"display":"flex","justify-content":"center","align-items":"center"}),
                 html.Div(html.H1("Historical breakdown of delays by years"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div([
-                    dcc.Graph(id='carrier_hist_delay_dep'),
-                    dcc.Graph(id='carrier_hist_delay_arr'),
-                ], style={"display":"flex","justify-content":"center","align-items":"center"})
+                html.Div(id='carrier_hist_delay', style={"display":"flex","justify-content":"center","align-items":"center"})
                 ,])
             ),
             dcc.Tab(className="custom-tab icon4", selected_className='custom-tab--selected', label='Same departure time', 
@@ -140,20 +119,11 @@ app.layout = html.Div(
                 html.Div(html.H1(id = "deph_line_title"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 dcc.Graph(id='deph_line'),
                 html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div([
-                    dcc.Graph(id='deph_pie_dep'),
-                    dcc.Graph(id='deph_pie_arr'),
-                ], style={"display":"flex"}),
+                html.Div(id="deph_pie", style={"display":"flex"}),
                 html.Div(html.H1("Proportion of delays in 2012 by months"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div([
-                    dcc.Graph(id='deph_bar_dep'),
-                    dcc.Graph(id='deph_bar_arr'),
-                ], style={"display":"flex","justify-content":"center","align-items":"center"}),
+                html.Div(id="deph_bar", style={"display":"flex","justify-content":"center","align-items":"center"}),
                 html.Div(html.H1("Historical breakdown of delays by years"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div([
-                    dcc.Graph(id='deph_hist_delay_dep'),
-                    dcc.Graph(id='deph_hist_delay_arr'),
-                ], style={"display":"flex","justify-content":"center","align-items":"center"})
+                html.Div(id='deph_hist_delay', style={"display":"flex","justify-content":"center","align-items":"center"})
             ])
             ),
             dcc.Tab(className="custom-tab icon5", selected_className='custom-tab--selected', label='Same arrival time', 
@@ -161,20 +131,11 @@ app.layout = html.Div(
                 html.Div(html.H1(id = "arrh_line_title"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 dcc.Graph(id='arrh_line'),
                 html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div([
-                    dcc.Graph(id='arrh_pie_dep'),
-                    dcc.Graph(id='arrh_pie_arr'),
-                ], style={"display":"flex"}),
+                html.Div(id='arrh_pie', style={"display":"flex"}),
                 html.Div(html.H1("Proportion of delays by months"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div([
-                    dcc.Graph(id='arrh_bar_dep'),
-                    dcc.Graph(id='arrh_bar_arr'),
-                ], style={"display":"flex","justify-content":"center","align-items":"center"}),
+                html.Div(id="arrh_bar", style={"display":"flex","justify-content":"center","align-items":"center"}),
                 html.Div(html.H1("Breakdown of historical delays by years"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div([
-                    dcc.Graph(id='arrh_hist_delay_dep'),
-                    dcc.Graph(id='arrh_hist_delay_arr'),
-                ], style={"display":"flex","justify-content":"center","align-items":"center"})
+                html.Div(id="arrh_hist_delay", style={"display":"flex","justify-content":"center","align-items":"center"})
             ])
             ),
             dcc.Tab(className="custom-tab icon6", selected_className='custom-tab--selected', label='Upload files', 
@@ -207,7 +168,6 @@ app.layout = html.Div(
                         good_example_df.to_dict('records'),
                         [{'name': i, 'id': i} for i in good_example_df.columns],
                         style_header={ 'background-color': 'white' }
-
                     ),
                     html.Hr(),  # horizontal line
                 ]),
@@ -217,11 +177,9 @@ app.layout = html.Div(
                         options_dict['carrier'],
                         [{'name': 'Carrier name', 'id': "label"}, {'name': 'IATA', 'id': "value"}],
                         sort_action = 'native'
-
                     ),
                     html.Hr(),  # horizontal line
                 ])                
-                
             ], style={"textAlign":"center","align-items":"center"}),    
             )
         ])
@@ -328,47 +286,33 @@ def update_orig_dest_plot(orig, dest):
     return line_plot, line_title
 
 @app.callback(
-    Output('orig_dest_pie_dep','figure'),
-    Output('orig_dest_pie_arr','figure'),
-    Output('orig_dest_bar_dep','figure'),
-    Output('orig_dest_bar_arr','figure'),   
+    Output('orig_dest_pie','children'),
+    Output('orig_dest_bar','children'),
     Input('orig', 'value'),
     Input('dest', 'value')
 )
 def update_orig_dest_pie(orig, dest):
-    try:
-        pie_plot_dep = px.pie()
-        pie_plot_arr = px.pie()
-        bar_plot_dep = px.bar()
-        bar_plot_arr = px.bar()
-    except ValueError:
-        pie_plot_dep = px.pie()
-        pie_plot_arr = px.pie()
-        bar_plot_dep = px.bar()
-        bar_plot_arr = px.bar() 
+    pie_children = html.Div()
+    bar_children = html.Div() 
 
     if all([orig, dest]):
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(orig_dest_dep_df, orig_dest_arr_df, 
                                                                               [("origin_airport_code", orig), ("dest_airport_code", dest)])
-    return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
-
+        pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
+        bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
+    return pie_children, bar_children
 @app.callback(
-    Output('orig_dest_hist_delay_dep','figure'),
-    Output('orig_dest_hist_delay_arr','figure'),
+    Output('orig_dest_hist_delay','children'),
     Input('orig', 'value'),
     Input('dest', 'value')
     )
+    
 def update_orig_dest_hist_delay_type(orig, dest):
-    try:
-        hist_dep = px.histogram()
-        hist_arr = px.histogram()
-    except ValueError:
-        hist_dep = px.histogram()
-        hist_arr = px.histogram()       
+    children = html.Div()      
     if all([orig, dest]):
-        hist_dep, hist_arr = update_delay_type(orig_dest_dep_df, orig_dest_arr_df,
-                                             [("origin_airport_code", orig), ("dest_airport_code", dest)])
-    return hist_dep, hist_arr
+        hist_dep, hist_arr = update_delay_type(orig_dest_dep_df, orig_dest_arr_df, [("origin_airport_code", orig), ("dest_airport_code", dest)])
+        children = [dcc.Graph(figure=hist_dep), dcc.Graph(figure=hist_arr),]
+    return children                                             
 
 @app.callback(
     Output('carrier_line','figure'),
@@ -390,43 +334,31 @@ def update_carrier_plot(carrier):
     return line_plot, line_title
 
 @app.callback(
-    Output('carrier_pie_dep','figure'),
-    Output('carrier_pie_arr','figure'),
-    Output('carrier_bar_dep','figure'),
-    Output('carrier_bar_arr','figure'),   
+    Output('carrier_pie','children'),
+    Output('carrier_bar','children'),
     Input('carrier', 'value'),
-)
-def update_carrier_pie(carrier):
-    try:
-        pie_plot_dep = px.pie()
-        pie_plot_arr = px.pie()
-        bar_plot_dep = px.bar()
-        bar_plot_arr = px.bar()
-    except ValueError:
-        pie_plot_dep = px.pie()
-        pie_plot_arr = px.pie()
-        bar_plot_dep = px.bar()
-        bar_plot_arr = px.bar()        
+    )
+def update_carrier_pie_bar(carrier):
+    pie_children = html.Div()
+    bar_children = html.Div()         
     if carrier:
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(carrier_dep_df, carrier_arr_df, [("u_carrier", carrier)])
-    return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+        pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
+        bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
+    return pie_children, bar_children
 
 @app.callback(
-    Output('carrier_hist_delay_dep','figure'),
-    Output('carrier_hist_delay_arr','figure'),
+    Output('carrier_hist_delay','children'),
     Input('carrier', 'value')
     )
+ 
 def update_carrier_hist_delay_type(carrier):
-    try:
-        hist_dep = px.histogram()
-        hist_arr = px.histogram()
-    except ValueError:
-        hist_dep = px.histogram()
-        hist_arr = px.histogram()       
+    children = html.Div()         
     if carrier:
         hist_dep, hist_arr = update_delay_type(carrier_dep_df, carrier_arr_df, 
                                              [("u_carrier", carrier)])
-    return hist_dep, hist_arr
+        children = [dcc.Graph(figure=hist_dep), dcc.Graph(figure=hist_arr),]
+    return children 
 
 @app.callback(
     Output('deph_line','figure'),
@@ -449,47 +381,33 @@ def update_deph_plot(time_slider):
     return line_plot, line_title
 
 @app.callback(
-    Output('deph_pie_dep','figure'),
-    Output('deph_pie_arr','figure'),
-    Output('deph_bar_dep','figure'),
-    Output('deph_bar_arr','figure'),   
+    Output('deph_pie','children'),
+    Output('deph_bar','children'),
     [Input('time_slider', 'value')]
     )
-def update_deph_pie(time_slider):
-    try:
-        pie_plot_dep = px.pie()
-        pie_plot_arr = px.pie()
-        bar_plot_dep = px.bar()
-        bar_plot_arr = px.bar()
-    except ValueError:
-        pie_plot_dep = px.pie()
-        pie_plot_arr = px.pie()
-        bar_plot_dep = px.bar()
-        bar_plot_arr = px.bar()        
+def update_deph_pie_bar(time_slider):
+    pie_children = html.Div()
+    bar_children = html.Div()      
     if time_slider:
         dep, arr = time_slider
         dep = dep%24
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(deph_dep_df, deph_arr_df, [("dep_hour", dep)])
-    return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
+        pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
+        bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
+    return pie_children, bar_children
 
 @app.callback(
-    Output('deph_hist_delay_dep','figure'),
-    Output('deph_hist_delay_arr','figure'),
+    Output('deph_hist_delay','children'),
     [Input('time_slider', 'value')]
     )
 def update_deph_hist_delay_type(time_slider):
-    try:
-        hist_dep = px.histogram()
-        hist_arr = px.histogram()
-    except ValueError:
-        hist_dep = px.histogram()
-        hist_arr = px.histogram()       
+    children = html.Div()      
     if time_slider:
         dep, arr = time_slider
         dep = dep%24
-        hist_dep, hist_arr = update_delay_type(deph_dep_df, deph_arr_df,
-                                             [("dep_hour", dep)])
-    return hist_dep, hist_arr
+        hist_dep, hist_arr = update_delay_type(deph_dep_df, deph_arr_df, [("dep_hour", dep)])
+        children = [dcc.Graph(figure=hist_dep), dcc.Graph(figure=hist_arr),]
+    return children
 
 @app.callback(
     Output('arrh_line','figure'),
@@ -512,47 +430,34 @@ def update_arrh_plot(time_slider):
     return line_plot, line_title
 
 @app.callback(
-    Output('arrh_pie_dep','figure'),
-    Output('arrh_pie_arr','figure'),
-    Output('arrh_bar_dep','figure'),
-    Output('arrh_bar_arr','figure'),   
+    Output('arrh_pie','children'),
+    Output('arrh_bar','children'),
     [Input('time_slider', 'value')]
-)
-def update_arrh_pie(time_slider):
-    try:
-        pie_plot_dep = px.pie()
-        pie_plot_arr = px.pie()
-        bar_plot_dep = px.bar()
-        bar_plot_arr = px.bar()
-    except ValueError:
-        pie_plot_dep = px.pie()
-        pie_plot_arr = px.pie()
-        bar_plot_dep = px.bar()
-        bar_plot_arr = px.bar()        
+    )
+
+def update_arrh_pie_bar(time_slider):
+    pie_children = html.Div()
+    bar_children = html.Div()      
     if time_slider:
         dep, arr = time_slider
         arr = arr%24        
         pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr = generate_pie_bar(arrh_dep_df, arrh_arr_df, [("arr_hour", arr)])
-    return pie_plot_dep, pie_plot_arr, bar_plot_dep, bar_plot_arr
-
+        pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
+        bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
+    return pie_children, bar_children
 @app.callback(
-    Output('arrh_hist_delay_dep','figure'),
-    Output('arrh_hist_delay_arr','figure'),
+    Output('arrh_hist_delay','children'),
     [Input('time_slider', 'value')]
     )
-def update_hist_delay_type(time_slider):
-    try:
-        hist_dep = px.histogram()
-        hist_arr = px.histogram()
-    except ValueError:
-        hist_dep = px.histogram()
-        hist_arr = px.histogram()      
+
+def update_arrh_hist_delay_type(time_slider):
+    children = html.Div()      
     if time_slider:
         dep, arr = time_slider
         arr = arr%24
-        hist_dep, hist_arr = update_delay_type(arrh_dep_df, arrh_arr_df,
-                                             [("arr_hour", arr)])
-    return hist_dep, hist_arr
+        hist_dep, hist_arr = update_delay_type(arrh_dep_df, arrh_arr_df, [("arr_hour", arr)])
+        children = [dcc.Graph(figure=hist_dep), dcc.Graph(figure=hist_arr),]
+    return children                                             
 @app.callback(
     Output("output_pie", "children"),
     Input("upload_data", "contents"), 
@@ -562,15 +467,8 @@ def update_hist_delay_type(time_slider):
 def output_pie(contents, filename):
     children = html.Div()      
     if contents:
-        content_type, content_string = contents.split(",")
-        decoded = base64.b64decode(content_string)
         try:
-            if "csv" in filename:
-                # Assume that the user uploaded a CSV file
-                df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), header=None)
-            elif "xls" in filename:
-                # Assume that the user uploaded an excel file
-                df = pd.read_excel(io.BytesIO(decoded), header=None)
+            df = read_upload_data(contents, filename)
         except:
             return children
         pred_df = generate_pred_table(df, airport_pairs, allowable_values)
@@ -599,24 +497,14 @@ def output_pie(contents, filename):
 def output_table(contents, filename):
     table = html.Div()
     if contents:
-        content_type, content_string = contents.split(",")
-        decoded = base64.b64decode(content_string)
         try:
-            if "csv" in filename:
-                # Assume that the user uploaded a CSV file
-                df = pd.read_csv(io.StringIO(decoded.decode("utf-8")), header=None)
-            elif "xls" in filename:
-                # Assume that the user uploaded an excel file
-                df = pd.read_excel(io.BytesIO(decoded), header=None)
-            else:
-                return html.Div(["Unsupported file format."])
-        except Exception as e:
-            print(e)
-            return html.Div(["There was an error processing this file."])
-
+            df = read_upload_data(contents, filename)
+        except:
+            return html.Div(["There was an error processing this file."])    
+            
         pred_df = generate_pred_table(df, airport_pairs, allowable_values)
         if len(pred_df) == 0:
-            table = html.Div("No valid rows")
+            table = html.Div("No valid rows.")
         else:
             table =  html.Div([
                 dash_table.DataTable(
@@ -629,7 +517,6 @@ def output_table(contents, filename):
                 html.Hr(),  # horizontal line
             ])
     return table
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)
