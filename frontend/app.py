@@ -17,6 +17,7 @@ import cufflinks as cf
 flask_url = 'http://127.0.0.1:5000/prediction'
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
+api_key = 'da5e2fca806ad3496172e27dd9c53916'
 
 #reading the data needed
 airport_pairs = pd.read_csv("data/airport_pairs.csv")
@@ -588,7 +589,7 @@ def get_pred2(orig2, dest2, carrier2):
         year, month, dayofweek = today.year, today.month, today.weekday()
         
         params = {
-            'access_key': 'da5e2fca806ad3496172e27dd9c53916',
+            'access_key': api_key,
             'dep_iata': orig2,
             'arr_iata': dest2,
             'airline_iata': carrier2,
@@ -668,7 +669,7 @@ def update_orig_dd3(d):
 
 def airport_table(orig3):
     params = {
-        'access_key': 'da5e2fca806ad3496172e27dd9c53916',
+        'access_key': api_key,
         'dep_iata': orig3,
     }
     api_result = requests.get('http://api.aviationstack.com/v1/flights', params)
