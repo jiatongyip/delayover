@@ -227,7 +227,7 @@ def get_tab_children(tab):
         # html.Div(id=tab + '_pie', style={"display":"flex","align-items":"center","justify-content":"center"}),
         html.H1("Proportion of delays by months", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
         html.Div(id=tab + '_bar', style={"display":"flex","align-items":"center","justify-content":"center"}),
-        html.H1("Historical breakdown of delays by years", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+        html.H1("Types of delays in 2012 by month", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
         html.Div(id=tab + '_hist_delay', style={"display":"flex","align-items":"center","justify-content":"center"})
         ]
     return ls
