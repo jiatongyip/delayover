@@ -9,23 +9,28 @@
 }
 .icon2{
     background: url("origin_dest.svg") no-repeat;
-    background-position: 15%;
+    background-position: 12%;
 
 }
 .icon3{
     background: url("airline.svg") no-repeat;
-    background-position: 15%;
+    background-position: 17%;
 
 }
 .icon4{
     background: url("departure.svg") no-repeat;
-    background-position: 12%;
+    background-position: 8%;
 
 }
 
 .icon5{
     background: url("arrival.svg") no-repeat;
     background-position: 10%;
+
+}
+.icon6{
+    background: url("file.svg") no-repeat;
+    background-position: 18%;
 
 }
 .custom-tab {
@@ -53,3 +58,41 @@
     box-shadow: 0px 3px 0px #035BC2;
    
 }
+
+.drop {
+    border-radius: 5px;
+    background-color:#0056BD;
+    border: none;
+    color: #fff;
+    text-align: center;
+    font-size: 20px;
+    width: 300px;
+    transition: all 0.3s;
+    padding:16px;
+    cursor: pointer;
+  }
+  
+.drop:hover{
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.5s;
+  }
+.drop:after {
+    content: '»';
+    position: absolute;
+    opacity: 0;  
+    top: 14px;
+    right: -20px;
+    transition: 0.5s;
+  }
+  
+.drop:hover{
+    padding-right: 24px;
+    padding-left:8px;
+  }
+  
+.drop:hover:after {
+    opacity: 1;
+    right: 10px;
+  }
