@@ -68,9 +68,9 @@ app.layout = html.Div(
                                 dcc.DatePickerSingle(
                                     id='date_picker',
                                     min_date_allowed=date(2013, 1, 1),
-                                    max_date_allowed=date(2015, 12, 31),
-                                    initial_visible_month=date(2014, 1, 1),
-                                    date=date(2014, 1, 1),
+                                    max_date_allowed=date(2022, 12, 31),
+                                    initial_visible_month=date(2015, 1, 1),
+                                    date=date(2015, 1, 1),
                                     month_format = "MMMM YYYY",
                                     display_format = "DD-MMM-YYYY"
                                     ),
@@ -123,13 +123,15 @@ app.layout = html.Div(
                     html.H3("You may refer to an example of a valid csv file below."),
                     html.H3("Please do not include headers in the file. The expected columns in order are:"),
                     html.Ol([
-                        html.Li("year (integer)"),
-                        html.Li("month (integer)",style={"padding-top":"5px"}),
-                        html.Li("day (integer)",style={"padding-top":"5px"}),
-                        html.Li("origin airport code",style={"padding-top":"5px"}),
-                        html.Li("carrier (IATA)",style={"padding-top":"5px"}),
-                        html.Li("scheduled hour of departure (24 hour)",style={"padding-top":"5px"})
-                        ,]
+                        html.Li("Year (integer)"),
+                        html.Li("Month (integer)",style={"padding-top":"5px"}),
+                        html.Li("Day (integer)",style={"padding-top":"5px"}),
+                        html.Li("Origin airport code",style={"padding-top":"5px"}),
+                        html.Li("Destination airport code",style={"padding-top":"5px"}),
+                        html.Li("Carrier (IATA)",style={"padding-top":"5px"}),
+                        html.Li("Scheduled hour of departure (24 hour)",style={"padding-top":"5px"}),
+                        html.Li("Scheduled hour of arrival (24 hour)",style={"padding-top":"5px"})
+                        ]
                     )
                 ]
                 ,style={"font-family": 'Poppins,sans-serif',"width":"560px","margin":"0 auto",
