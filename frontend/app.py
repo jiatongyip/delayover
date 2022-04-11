@@ -119,7 +119,7 @@ app.layout = html.Div(
                 html.Div(html.H1(id = "deph_line_title"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 dcc.Graph(id='deph_line'),
                 html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id="deph_pie", style={"display":"flex"}),
+                html.Div(id="deph_pie", style={"display":"flex","align-items":"center","justify-content":"center"}),
                 html.Div(html.H1("Proportion of delays in 2012 by months"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div(id="deph_bar", style={"display":"flex","justify-content":"center","align-items":"center"}),
                 html.Div(html.H1("Historical breakdown of delays by years"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
@@ -131,7 +131,7 @@ app.layout = html.Div(
                 html.Div(html.H1(id = "arrh_line_title"), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 dcc.Graph(id='arrh_line'),
                 html.Div(html.H1("Proportion of delays in 2012"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id='arrh_pie', style={"display":"flex"}),
+                html.Div(id='arrh_pie', style={"display":"flex","align-items":"center","justify-content":"center"}),
                 html.Div(html.H1("Proportion of delays by months"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div(id="arrh_bar", style={"display":"flex","justify-content":"center","align-items":"center"}),
                 html.Div(html.H1("Breakdown of historical delays by years"),style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
@@ -176,10 +176,16 @@ app.layout = html.Div(
                     dash_table.DataTable(
                         options_dict['carrier'],
                         [{'name': 'Carrier name', 'id': "label"}, {'name': 'IATA', 'id': "value"}],
+                        style_cell={'textAlign': 'center'},
+                        style_data_conditional=[{
+                            'if': {'row_index': 'odd'},'backgroundColor': 'rgb(241, 241, 241)'
+                            }
+                        ],
+                        style_header={'fontWeight': 'bold','backgroundColor': 'rgb(241, 241, 241)'},
                         sort_action = 'native'
                     ),
                     html.Hr(),  # horizontal line
-                ])                
+                ], style={"textAlign":"center","align-items":"center","width":"60%",'marginLeft': 'auto', 'marginRight': 'auto'})
             ], style={"textAlign":"center","align-items":"center"}),    
             )
         ])
@@ -480,13 +486,15 @@ def output_pie(contents, filename):
                 names = 'Status',
                 title = "% of departures predicted to delay",
             )
+            plot_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label')
             arr_prop = sum(pred_df.arr_delay > 0) / len(pred_df) * 100
             plot_arr = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [arr_prop, 100 - arr_prop]}),
                 values = 'Proportion', 
                 names = 'Status',
                 title = "% of arrival predicted to delay",
             )
-            children = html.Div(children = [dcc.Graph(figure=plot_dep), dcc.Graph(figure=plot_arr)])
+            plot_arr.update_traces(textposition = 'outside' , textinfo = 'percent+label')
+            children = html.Div(children = [dcc.Graph(figure=plot_dep), dcc.Graph(figure=plot_arr)],style={"display":"flex","align-items":"center","justify-content":"center"})
     return children
 
 @app.callback(
