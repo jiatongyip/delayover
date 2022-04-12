@@ -211,8 +211,7 @@ app.layout = html.Div(
                     html.Div(dcc.Dropdown(id='dest2', value = ""), style={"padding":"10px 20px","width":"100px"}),
                 ], style={"display":"flex","justify-content":"center","align-items":"center","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div(id = 'airportTable', style={"text-align":"center","font-size":"18px",
-                "font-family": 'Poppins,sans-serif',"border":"2px solid #000000","width": "500px",
-                "border-radius":"4px","margin":"0 auto","padding":"10px 0"}),
+                "font-family": 'Poppins,sans-serif',"margin":"0 auto","padding":"10px 0"}),
                 ])
             ),
         ])
