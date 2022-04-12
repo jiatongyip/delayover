@@ -48,7 +48,7 @@ app.layout = html.Div(
         html.Div(
             [html.H1('Flight Delay'),
             html.Img(src=app.get_asset_url('plane.svg')),
-            html.P(html.I("Dashboard designed to predict and visualise airplane delays. You can check for flights delays that are coming from the same origin and destination , same carrier, same departure time and arrival time !"),style={"font-size":"12px","width":"650px","margin":"0 auto","padding":"10px 0"}),],
+            html.P(html.I("Dashboard designed to predict and visualise airplane delays. You can check for flights delays that are coming from the same origin and destination , same carrier, same departure time and arrival time!"),style={"font-size":"12px","width":"650px","margin":"0 auto","padding":"10px 0"}),],
             style={"background-color":"#013E87","padding":"10px 0","color":"#fff","text-align":"center","font-family": 'Poppins,sans-serif',"font-size":"20px"}
         ),
         dcc.Tabs(className='custom-tabs-container', children=[
@@ -57,14 +57,28 @@ app.layout = html.Div(
                 selected_className='custom-tab--selected',
                 label='Predicted Delay',
                 children=html.Div(
-                    children=[
+                    children=[html.Div([
+                        html.H2("Welcome! We are here to help you find out the predicted delays for your flight of interest."), 
+                        html.Br(),                                                    
+                    ]),
                         html.Div([
                         html.H2(id='pred',style={"font-size":"24px"})
                         ],style={"padding":"5px","text-align":"center",
                         "width":"500px","margin":"30px auto","box-shadow": "0px 2px 6px rgba(0, 38, 83, 0.25)"}
                         ),
+                        html.Div([
+                            html.I("To have a clearer idea of what to expect, navigate to the next few tabs to see the past delays of similar flights!"),
+                            html.Br(),
+                            html.Br(),
+                            html.Hr(),
+                            ], style={'text-align':'center'}),
+                        html.Div([
+                            html.H2("Fill in your flight information below."),   
+
+                        ]),
                         html.Div(
-                            [html.Div(html.H2("Select Date:"), style={"padding-right":"5px"}),
+                            [
+                            html.Div(html.H2("Select Date:"), style={"padding-right":"5px"}),
                             html.Div(
                                 dcc.DatePickerSingle(
                                     id='date_picker',
@@ -116,10 +130,11 @@ app.layout = html.Div(
 
                 html.Div([
                     html.Img(src=app.get_asset_url('pin.svg'),style={"padding-right":"20px","width":"20px"}),
-                    html.H1("Please upload a .csv or . xls file",style={"font-size":"36px"})
+                    html.H1("Want to view predictions for multiple flights at once? Upload your own file!",style={"font-size":"36px"})
                 ],style={"font-family": 'Poppins,sans-serif',"display":"flex","align-items":"center","justify-content":"center"}),
 
                 html.Div([
+                    html.H3("Only .csv or .xls filetypes are supported."),
                     html.H3("Please ensure that your data is in the correct format and input type. Invalid rows will be ignored."),
                     html.H3("You may refer to an example of a valid csv file below."),
                     html.H3("Please do not include headers in the file. The expected columns in order are:"),
@@ -134,16 +149,16 @@ app.layout = html.Div(
                         html.Li("Scheduled hour of arrival (24 hour)",style={"padding-top":"5px"})
                         ]
                     )
-                ]
-                ,style={"font-family": 'Poppins,sans-serif',"width":"560px","margin":"0 auto",
-                "text-align":"left","padding":"20px 30px","box-shadow": "0px 4px 4px rgba(0, 0, 0, 0.25)",'margin-bottom':"40px"
-                }),
+                ] ,style={"font-family": 'Poppins,sans-serif',"width":"560px","margin":"0 auto",
+                "text-align":"left","padding":"20px 30px","box-shadow": "0px 4px 4px rgba(0, 0, 0, 0.25)",'margin-bottom':"40px"}),
+
                 dcc.Upload(id = "upload_data", 
                 children = html.Div(['Drop or Select a file ',]), 
                 style={'textAlign': 'center',"margin":"0 auto"}, className="drop", multiple = False
                 ),
                 html.Div([html.Br(),]),
                 html.Div(id='output_table'),
+                html.Div(html.H3("A summary for all the uploaded flights:")),
                 html.Div(id = "output_pie", style={"display":"flex","justify-content":"center","align-items":"center"}),
                 html.Hr(),
                 html.Div([
@@ -153,10 +168,12 @@ app.layout = html.Div(
                         style_cell={'textAlign': 'center'},
                         style_header={ 'background-color': 'white',"text-align":"center"}
                     ),
+                    html.Br(),
+                    html.Br(),
                     html.Hr(),  # horizontal line
                 ], style={"padding-top":"40px","width":"500px","margin":"0 auto","text-align":'center'}),
                 html.I("An example of a csv file you may upload"),
-                html.H2("You may refer to the IATA for the supported carriers below.", style={"padding-top":"30px"}),
+                html.H2("Not sure about the IATA for your carrier? Here's a list of supported carriers.", style={"padding-top":"30px"}),
                 html.Div([
                     dash_table.DataTable(
                         options_dict['carrier'],
@@ -175,7 +192,11 @@ app.layout = html.Div(
             ),
             dcc.Tab(selected_className='custom-tab--selected', label='Real Time API', 
             children=html.Div([
-                html.Div(html.H1('Real Time API from AviationStack'), style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+                html.Div([
+                    html.H1("Fetching the latest flights from AviationStack's real time API for your easy access"),
+                    html.I('Select your airport of interest below:')
+                    ], 
+                style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div([
                     html.Div(html.H2("Select Origin:"), style={"padding-right":"5px"}),
                     html.Div(dcc.Dropdown(id='orig2', value = ""), style={"padding":"10px 20px","width":"100px"}),
@@ -277,7 +298,7 @@ def update_orig_dest_plot(orig, dest):
     line_title = ""
     if all([orig, dest]):
         line_plot = gen_line_plots(orig_dest_dep_df, orig_dest_arr_df, [("origin_airport_code", orig), ("dest_airport_code", dest)])
-        line_title = "Delays for flights from " + orig + " to " + dest + "!"
+        line_title = "Past flights from " + orig + " to " + dest
 
     return line_plot, line_title
 
@@ -323,7 +344,7 @@ def update_carrier_plot(carrier):
     line_title = ""
     if carrier:
         line_plot = gen_line_plots(carrier_dep_df, carrier_arr_df, [("u_carrier", carrier)])
-        line_title = "Delays for flights by " + carrier_dict[carrier] + "!"
+        line_title = "Past flights by " + carrier_dict[carrier]
 
     return line_plot, line_title
 
@@ -369,7 +390,7 @@ def update_deph_plot(time_slider):
         dep, arr = time_slider
         dep = dep%24
         line_plot =  gen_line_plots(deph_dep_df, deph_arr_df, [("dep_hour", dep)])
-        line_title = "Delays for flights departing at " + "{:02}".format(dep) + "00 hours!"
+        line_title = "Past flights departing at " + "{:02}".format(dep) + "00 hours"
 
     return line_plot, line_title
 
@@ -418,7 +439,7 @@ def update_arrh_plot(time_slider):
         dep, arr = time_slider
         arr = arr%24
         line_plot = gen_line_plots(arrh_dep_df, arrh_arr_df, [("arr_hour", arr)])
-        line_title = "Delays for flights arriving at " + "{:02}".format(arr) + "00 hours!"
+        line_title = "Past flights arriving at " + "{:02}".format(arr) + "00 hours"
 
     return line_plot, line_title
 
@@ -456,7 +477,7 @@ def update_arrh_hist_delay_type(time_slider):
 )
 
 def output_pie(contents, filename):
-    children = html.Div()      
+    children = html.Div(["No file uploaded."])      
     if contents:
         try:
             df = read_upload_data(contents, filename)
@@ -465,14 +486,14 @@ def output_pie(contents, filename):
         pred_df = generate_pred_table(df, airport_pairs, allowable_values)
         if len(pred_df) > 0:
             # generate delay proportion for departure in 2012
-            dep_prop = sum(pred_df.dep_delay > 0) / len(pred_df) * 100
+            dep_prop = sum(pred_df['Predicted delay for departure'] > 0) / len(pred_df) * 100
             plot_dep = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [dep_prop, 100 - dep_prop]}),
                 values = 'Proportion', 
                 names = 'Status',
                 title = "% of departures predicted to delay",
             )
             plot_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label', marker = {'colors': ['#003676', '#FFC90B']})
-            arr_prop = sum(pred_df.arr_delay > 0) / len(pred_df) * 100
+            arr_prop = sum(pred_df['Predicted delay for arrival'] > 0) / len(pred_df) * 100
             plot_arr = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [arr_prop, 100 - arr_prop]}),
                 values = 'Proportion', 
                 names = 'Status',
@@ -500,8 +521,8 @@ def output_table(contents, filename):
             table = html.Div("No valid rows.")
         else:
             table =  html.Div([
-                html.H3("Predictions for " + filename),
-                html.I("You may select one row to view its historical delay information in the other tabs."),
+                html.H3("Showing predictions for " + filename),
+                html.I("Interested to know more about one particular row? You may select that row and visit the other tabs."),
                 dash_table.DataTable(
                     id = "output_table_datatable",
                     data = pred_df.to_dict('records'),

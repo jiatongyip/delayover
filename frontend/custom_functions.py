@@ -165,8 +165,8 @@ def get_pred_for_upload(year, month, day, orig, dest, carrier, dep, arr, dist):
     return [max(float(delay['dep']), 0), max(float(delay['arr']),0)]
 
 def generate_pred_table(df, airport_pairs, allowable_values):
-    pred_df = pd.DataFrame(columns = ['year', 'month', 'day', 'origin', 'dest', 'carrier', 'dep_hour', 'arr_hour',
-                                    'dep_delay', 'arr_delay'])
+    pred_df = pd.DataFrame(columns = ['Year', 'Month', 'Day', 'Origin Airport', 'Destination Airport', 'Carrier', 'Hour of Departure', 'Hour of Arrival',
+                                    'Predicted delay for departure', 'Predicted delay for arrival'])
     for index, row in df.iterrows():
         # check for additional columns
         if len(row.dropna()) != 8:
@@ -215,19 +215,22 @@ def read_upload_data(contents, filename):
     return df
 
 def get_tab_children(tab):
+    default_style = {"text-align":"center","font-family": 'Poppins,sans-serif'}
     ls = [
         html.H1(id = tab + "_line_title", style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
-        html.H3("The plot below shows how the delays vary in 2010, 2011 and 2012."),
+        html.H3("The plot below shows how the median of each month varies from 2010 to 2012. The 25th to 75th percentile is marked by the coloured bands.", 
+        style=default_style),
+        html.I("Click on the legends to show or hide the respective lines.", 
+        style=default_style), 
         dcc.Graph(id=tab + '_line'),
-        html.H3("Let's break it down to observe the patterns in the different months of 2012."),
-        # html.H1(" Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-        # html.Div(id=tab + '_pie', style={"display":"flex","align-items":"center","justify-content":"center"}),
-        html.H1("Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+        html.H2("Take a look at the plots below to explore whether there is a seasonal trend in 2012.", style=default_style),
+        html.H3("Proportion of delays in 2012", style=default_style),
         html.Div(id=tab + '_bar', style={"display":"flex","align-items":"center","justify-content":"center"}),
-        html.H1("Severity of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+        html.H3("Severity of delays in 2012", style=default_style),
         html.Div(id=tab + '_hist_delay', style={"display":"flex","align-items":"center","justify-content":"center"})
         ]
     return ls
+
 
 def predict_delay(year, month, dayofweek, dep, arr, carrier, orig, dest):
     dist = get_distance(airport_pairs, orig, dest)
