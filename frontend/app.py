@@ -232,7 +232,7 @@ app.layout = html.Div(
     component_property='value')
 )
 def get_pred(date_picker, time_slider, orig, dest, carrier):
-    return_line = "Please fill in all the fields below."
+    return_line = "No predictions generated."
     if all([date_picker, time_slider, orig, dest, carrier]):
         year, month, dayofweek = get_yr_mon_dow(date_picker)
         dep , arr = time_slider

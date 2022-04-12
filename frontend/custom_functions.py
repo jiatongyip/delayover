@@ -112,36 +112,41 @@ def update_delay_type(dep_df, arr_df, col_list):
         except:
             hist_dep = px.histogram()
             hist_arr = px.histogram()         
-        dep_df.rename(columns = {'delay_type':'Delay Type'}, inplace = True)
-        arr_df.rename(columns = {'delay_type':'Delay Type'}, inplace = True)
-        dep_df = dep_df.loc[dep_df['Delay Type'] != 'None']
-        arr_df = arr_df.loc[arr_df['Delay Type'] != 'None']
+
+        dep_df = dep_df.loc[dep_df.delay_type != 'None']
+        arr_df = arr_df.loc[arr_df.delay_type != 'None']
         hist_dep = px.histogram(dep_df, 
-            x='mon', 
+            x='mon',
             y='type_count',
-            color='Delay Type', 
+            color='delay_type', 
             nbins=12,
             barmode='group',
             title = "For departures",
             category_orders={"Delay": ["None", "Slight","Moderate", "Severe"]},
-            labels = {'mon': 'Month', 'count': 'Count'},
+            labels = {'mon': 'Month', 'delay_type':'Delay Type'},
             color_discrete_sequence=["#003676", "#FFC90B","#30b9cf"]
         )
         hist_arr = px.histogram(arr_df, 
             x='mon', 
             y='type_count',
-            color='Delay Type', 
+            color='delay_type',
             nbins=12,
             barmode='group',
             title = "For arrivals",
             category_orders={"Delay": ["None", "Slight","Moderate", "Severe"]},
-            labels = {'mon': 'Month', 'count': 'Count'},
+            labels = {'mon': 'Month', 'delay_type':'Delay Type'},
             color_discrete_sequence=["#003676", "#FFC90B","#30b9cf"]
         )
         hist_dep.update_layout(yaxis_title="Count", xaxis_title="Month", xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         "tickvals": list(range(1, 13))})
+        hist_dep.update_traces(hovertemplate=
+            hist_dep.data[0].hovertemplate.replace("sum of type_count", "Count")
+        )
         hist_arr.update_layout(yaxis_title="Count", xaxis_title="Month", xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         "tickvals": list(range(1, 13))},)
+        hist_arr.update_traces(hovertemplate=
+            hist_arr.data[0].hovertemplate.replace("sum of type_count", "Count")
+        )                        
         return hist_dep, hist_arr
 
 def check_date(year, month, day):
@@ -222,7 +227,7 @@ def get_tab_children(tab):
         html.I("Click on the legends to show or hide the respective lines.", 
         style=default_style), 
         dcc.Graph(id=tab + '_line'),
-        html.H2("Take a look at the plots below to explore whether there is a seasonal trend in 2012.", style=default_style),
+        html.H2("Take a look at the plots below to explore the seasonal trends in 2012.", style=default_style),
         html.H3("Proportion of delays in 2012", style=default_style),
         html.Div(id=tab + '_bar', style={"display":"flex","align-items":"center","justify-content":"center"}),
         html.H3("Severity of delays in 2012", style=default_style),
