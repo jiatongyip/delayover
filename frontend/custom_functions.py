@@ -219,7 +219,7 @@ def read_upload_data(contents, filename):
     return df
 
 def get_tab_children(tab):
-    default_style = {"text-align":"center","font-family": 'Poppins,sans-serif'}
+    default_style = {"text-align":"center","font-family": 'Poppins,sans-serif', "color":"#001E42","font-weight":"500","font-size":"16px"}
     ls = [
         html.H1(id = tab + "_line_title", style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
         html.H3("The plot below shows how the median of each month varies from 2010 to 2012. The 25th to 75th percentile is marked by the coloured bands.", 
