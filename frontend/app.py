@@ -11,7 +11,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import requests
 import plotly.graph_objs as go
-from custom_functions import (get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, 
+from custom_functions1 import (get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, 
 update_delay_type, generate_pred_table, read_upload_data, get_tab_children, predict_delay)
 
 import cufflinks as cf
@@ -54,10 +54,13 @@ with open("data/default_values.txt", "r") as file:
 app.layout = html.Div(
     [
         html.Div(
-            [html.H1('Flight Delay'),
-            html.Img(src=app.get_asset_url('plane.svg')),
-            html.P(html.I("Dashboard designed to predict and visualise airplane delays. You can check for flights delays that are coming from the same origin and destination , same carrier, same departure time and arrival time!"),style={"font-size":"12px","width":"650px","margin":"0 auto","padding":"10px 0"}),],
-            style={"background-color":"#013E87","padding":"10px 0","color":"#fff","text-align":"center","font-family": 'Poppins,sans-serif',"font-size":"20px"}
+            [html.H1('Flight Delay' ,style={"font-size":"40px","text-align":"center"}),
+            html.Div([
+                html.Img(src=app.get_asset_url('plane.svg'),style={"padding-right":"30px"}),
+                html.H2("We are here to help you find out the predicted delays for your flight of interest.", style={"width":"650px","font-size":"30px","text-align":"left"}), 
+            ],style={"display":"flex","justify-content":"center","align-items":"center"}),
+            html.P("This dashboard is designed to predict and visualise airplane delays. To have a cleaer picture of flights delays, you can navigate to the other tabs to check for flights delays that are coming from the same origin and destination , same carrier, same departure time and arrival time.",style={"font-size":"14px","width":"640px","margin":"0 auto","padding-left":"90px","padding-bottom":"20px"}),],
+            style={"background-color":"#013E87","padding":"10px 0","color":"#fff","font-family": 'Poppins,sans-serif',"text-align":"left"}
         ),
         dcc.Tabs(className='custom-tabs-container', children=[
             dcc.Tab(
@@ -65,23 +68,14 @@ app.layout = html.Div(
                 selected_className='custom-tab--selected',
                 label='Predicted Delay',
                 children=html.Div(
-                    children=[html.Div([
-                        html.H2("Welcome! We are here to help you find out the predicted delays for your flight of interest."), 
-                        html.Br(),                                                    
-                    ]),
+                    children=[
                         html.Div([
                         html.H2(id='pred',style={"font-size":"24px"})
                         ],style={"padding":"5px","text-align":"center",
-                        "width":"500px","margin":"30px auto","box-shadow": "0px 2px 6px rgba(0, 38, 83, 0.25)"}
+                        "width":"650px","margin":"30px auto","box-shadow": "0px 3px 6px rgba(0, 38, 83, 0.25)"}
                         ),
                         html.Div([
-                            html.I("To have a clearer idea of what to expect, navigate to the next few tabs to see the past delays of similar flights!"),
-                            html.Br(),
-                            html.Br(),
-                            html.Hr(),
-                            ], style={'text-align':'center'}),
-                        html.Div([
-                            html.H2("Fill in your flight information below."),   
+                            html.H2("Please fill in your flight details below.",style={"text-align":"center","font-size":"30px"}),
 
                         ]),
                         html.Div(
@@ -108,16 +102,16 @@ app.layout = html.Div(
                                 id='carrier', value = default_values['carrier'],
                                 options=options_dict['carrier']),
                                 style={"padding":"10px 20px","width":"200px"})
-                            ], style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}
+                            ], style={"display":"flex","padding":"10px 0","justify-content":"center","align-items":"center","font-family": 'Poppins,sans-serif'}
                         ),
-                        html.H2("Select Departure and Arrival time:",style={"font-family": 'Poppins,sans-serif',"padding-top":"10px"}), 
+                        html.H2("Select Departure and Arrival time:",style={"font-family": 'Poppins,sans-serif',"padding-top":"10px","padding-left":"70px"}), 
                         html.Div(
                         dcc.RangeSlider(
                             min=0, max=48, step=1,
                             marks={0: '0000', 6: '0600', 12: '1200', 18: '1800', 24: '0000', 30: '0600', 36: '1200', 42: '1800', 48: '0000',},
                             value=default_values['time_slider'], allowCross = False, id='time_slider'
-                        ),style={"padding-top":"20px"}),
-                        html.Div(id='time_slider_output',style={"font-size":"17px","font-family": 'Poppins,sans-serif',"padding-top":"20px"}),
+                        ),style={"width":"1000px","padding":"20px 50px"}),
+                        html.Div(id='time_slider_output',style={"font-size":"18px","font-family": 'Poppins,sans-serif',"padding-left":"60px"}),
                     ], style={"font-family": 'Poppins,sans-serif'},
                 )
             ,),
@@ -138,14 +132,19 @@ app.layout = html.Div(
 
                 html.Div([
                     html.Img(src=app.get_asset_url('pin.svg'),style={"padding-right":"20px","width":"20px"}),
-                    html.H1("Want to view predictions for multiple flights at once? Upload your own file!",style={"font-size":"36px"})
+                    html.H1("To view predictions for multiple flights",style={"font-size":"30px","text-align":"center"})
                 ],style={"font-family": 'Poppins,sans-serif',"display":"flex","align-items":"center","justify-content":"center"}),
 
                 html.Div([
-                    html.H3("Only .csv or .xls filetypes are supported."),
+                    html.H3("Want to view predictions for multiple flights? Upload your file!"),
+                    html.Div([
+                        html.Img(src=app.get_asset_url('caution.svg'),style={"padding-right":"10px"}),
+                        html.H3("Only .csv or .xls filetypes are supported."),
+
+                    ],style={"display":"flex"}),
                     html.H3("Please ensure that your data is in the correct format and input type. Invalid rows will be ignored."),
-                    html.H3("You may refer to an example of a valid csv file below."),
-                    html.H3("Please do not include headers in the file. The expected columns in order are:"),
+                    html.P("You may refer to an example of a valid csv file below."),
+                    html.P("Please do not include headers in the file. The expected columns in order are:"),
                     html.Ol([
                         html.Li("Year (integer)"),
                         html.Li("Month (integer)",style={"padding-top":"5px"}),
@@ -166,9 +165,9 @@ app.layout = html.Div(
                 ),
                 html.Div([html.Br(),]),
                 html.Div(id='output_table'),
-                html.Div(html.H3("A summary for all the uploaded flights:")),
+                html.Div(html.H3("A summary for all the uploaded flights:"),style={"font-family": 'Poppins,sans-serif'}),
                 html.Div(id = "output_pie", style={"display":"flex","justify-content":"center","align-items":"center"}),
-                html.Hr(),
+                # html.Hr(),
                 html.Div([
                     dash_table.DataTable(
                         good_example_df.to_dict('records'),
@@ -178,10 +177,10 @@ app.layout = html.Div(
                     ),
                     html.Br(),
                     html.Br(),
-                    html.Hr(),  # horizontal line
-                ], style={"padding-top":"40px","width":"500px","margin":"0 auto","text-align":'center'}),
+                    # html.Hr(),  # horizontal line
+                ], style={"padding-top":"40px","width":"500px","margin":"0 auto","text-align":'center',"width":"620px"}),
                 html.I("An example of a csv file you may upload"),
-                html.H2("Not sure about the IATA for your carrier? Here's a list of supported carriers.", style={"padding-top":"30px"}),
+                html.H2("Not sure about the IATA for your carrier? Here's a list of supported carriers.", style={"padding-top":"40px","padding-bottom":"20px","width":"500px","margin":"0 auto"}),
                 html.Div([
                     dash_table.DataTable(
                         options_dict['carrier'],
@@ -195,14 +194,14 @@ app.layout = html.Div(
                         sort_action = 'native'
                     ),
                     html.Hr(),  # horizontal line
-                ], style={"textAlign":"center","align-items":"center","width":"700px",'marginLeft': 'auto', 'marginRight': 'auto'})
+                ], style={"textAlign":"center","align-items":"center","margin":"0 auto","width":"620px"})
             ], style={"textAlign":"center","align-items":"center"}),    
             ),
-            dcc.Tab(selected_className='custom-tab--selected', label='Real Time API', 
+            dcc.Tab(className="custom-tab icon7",selected_className='custom-tab--selected', label='Real Time API', 
             children=html.Div([
                 html.Div([
-                    html.H1("Fetching the latest flights from AviationStack's real time API for your easy access"),
-                    html.I('Select your airport of interest below:')
+                    html.H1("Real Time API from AviationStack"),
+                    html.P("Fetching the latest flights from AviationStack's real time API for your easy access. Select your airport of interest below:",style={"text-align":"center","font-family": 'Poppins,sans-serif',"width":"500px","margin":"0 auto"}),
                     ], 
                 style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
                 html.Div([
@@ -210,8 +209,10 @@ app.layout = html.Div(
                     html.Div(dcc.Dropdown(id='orig2', value = ""), style={"padding":"10px 20px","width":"100px"}),
                     html.Div(html.H2("Select Destination:"), style={"padding-left":"20px","padding-right":"5px"}),
                     html.Div(dcc.Dropdown(id='dest2', value = ""), style={"padding":"10px 20px","width":"100px"}),
-                ], style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id = 'airportTable'),
+                ], style={"display":"flex","justify-content":"center","align-items":"center","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
+                html.Div(id = 'airportTable', style={"text-align":"center","font-size":"18px",
+                "font-family": 'Poppins,sans-serif',"border":"2px solid #000000","width": "500px",
+                "border-radius":"4px","margin":"0 auto","padding":"10px 0"}),
                 ])
             ),
         ])
