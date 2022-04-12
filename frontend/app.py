@@ -11,7 +11,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import requests
 import plotly.graph_objs as go
-from custom_functions1 import (get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, 
+from custom_functions import (get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, 
 update_delay_type, generate_pred_table, read_upload_data, get_tab_children, predict_delay)
 
 import cufflinks as cf
