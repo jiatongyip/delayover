@@ -82,7 +82,7 @@ def generate_pie_bar(dep_df, arr_df, col_list):
             bar_plot_arr = px.bar()
 
         if not sum(dep_df['count']) == 0:
-            bar_plot_dep = px.bar(dep_df, x="mon", y=["delayed", "not delayed"], title="% of departure delay",
+            bar_plot_dep = px.bar(dep_df, x="mon", y=["delayed", "not delayed"], title="For departures",
                             labels = {'mon': "Month", 'value': 'Proportion', 'variable': 'Status'},
                             color_discrete_map={'delayed': '#003676','not delayed': '#FFC90B'})
             bar_plot_dep.update_layout(
@@ -91,7 +91,7 @@ def generate_pie_bar(dep_df, arr_df, col_list):
                 legend={'title_text':'Status'}
             )
         if not sum(arr_df['count']) == 0:
-            bar_plot_arr = px.bar(arr_df, x="mon", y=["delayed", "not delayed"], title="% of arrival delay",
+            bar_plot_arr = px.bar(arr_df, x="mon", y=["delayed", "not delayed"], title="For arrivals",
                             labels = {'mon': "Month", 'value': 'Proportion', 'variable': 'Status'},
                             color_discrete_map={'delayed': '#003676','not delayed': '#FFC90B'})
             bar_plot_arr.update_layout(
