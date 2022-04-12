@@ -12,7 +12,7 @@ from dash.exceptions import PreventUpdate
 import requests
 import plotly.graph_objs as go
 from custom_functions import (get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, 
-update_delay_type, generate_pred_table, read_upload_data, get_tab_children)
+update_delay_type, generate_pred_table, read_upload_data, get_tab_children, predict_delay)
 
 import cufflinks as cf
 
@@ -207,25 +207,18 @@ def get_pred(date_picker, time_slider, orig, dest, carrier):
     if all([date_picker, time_slider, orig, dest, carrier]):
         year, month, dayofweek = get_yr_mon_dow(date_picker)
         dep , arr = time_slider
-        dep = dep%24
-        arr = arr%24
-        dist = get_distance(airport_pairs, orig, dest)
-        param1 = {'yr': year, 'mon':month, 'day_of_week': dayofweek, 
-        'dep_hour':dep,'arr_hour':arr, 'u_carrier': carrier,
-        'origin_airport_code':orig, 'dest_airport_code': dest, 
-        'distance_grp':dist}
+        dep, arr = dep%24, arr%24
 
-        delay = requests.get(flask_url, params=param1).json()
-        if max(float(delay['arr']), 0) == 0:
+        delay = predict_delay(year, month, dayofweek, dep, arr, carrier, orig, dest)
+        if delay['arr'] == 0:
             arr_return_line = "The arrival will not delay."
         else: 
-            arr_return_line = "The arrival will delay by " + "{:.3f}".format(float(delay['arr'])) + " minutes."
-        if max(float(delay['dep']), 0) == 0:
+            arr_return_line = "The arrival will delay by " + "{:.3f}".format(delay['arr']) + " minutes."
+        if delay['dep'] == 0:
             dep_return_line = "The departure will not delay."
         else: 
-            dep_return_line = "The departure will delay by " + "{:.3f}".format(float(delay['dep'])) + " minutes."            
+            dep_return_line = "The departure will delay by " + "{:.3f}".format(delay['dep']) + " minutes."            
 
-        "{:.3f}".format
         return_line = [dep_return_line , html.Br(), arr_return_line]
     return return_line
 
@@ -644,17 +637,11 @@ def generate_predictions(flight):
         year, month, dayofweek = today.year, today.month, today.weekday()
         dep = int(flight['departure']['scheduled'][11:13])
         arr = int(flight['arrival']['scheduled'][11:13])
-        dep = dep%24
-        arr = arr%24
-        dist = get_distance(airport_pairs, flight['departure']['iata'], flight['arrival']['iata'])
-        param1 = {'yr': year, 'mon':month, 'day_of_week': dayofweek, 
-        'dep_hour':dep,'arr_hour':arr, 'u_carrier': flight['airline']['iata'],
-        'origin_airport_code':flight['departure']['iata'], 'dest_airport_code': flight['arrival']['iata'], 
-        'distance_grp':dist}
-                    
-        delay = requests.get(flask_url, params=param1).json()
-        arr_delay = "{:.3f}".format(float(delay['arr']))
-        dep_delay = "{:.3f}".format(float(delay['dep']))
+        orig, dest, carrier = flight['departure']['iata'], flight['arrival']['iata'], flight['airline']['iata']
+        delay = predict_delay(year, month, dayofweek, dep, arr, carrier, orig, dest)
+        arr_delay = "{:.3f}".format(delay['arr'])
+        dep_delay = "{:.3f}".format(delay['dep'])
+
         return(arr_delay, dep_delay)
     except: 
         return ["No data available", "No data available"]

@@ -11,6 +11,9 @@ from dash import Dash, dcc, html, no_update, dash_table
 
 flask_url = 'http://127.0.0.1:5000/prediction'
 
+#reading the data needed
+airport_pairs = pd.read_csv("data/airport_pairs.csv")
+
 with open("data/allowable_values.txt", "r") as file:
     allowable_values = eval(file.read())
 
@@ -225,3 +228,15 @@ def get_tab_children(tab):
         html.Div(id=tab + '_hist_delay', style={"display":"flex","align-items":"center","justify-content":"center"})
         ]
     return ls
+
+def predict_delay(year, month, dayofweek, dep, arr, carrier, orig, dest):
+    dist = get_distance(airport_pairs, orig, dest)
+    params = {'yr': year, 'mon':month, 'day_of_week': dayofweek, 
+    'dep_hour':dep,'arr_hour':arr, 'u_carrier': carrier,
+    'origin_airport_code':orig, 'dest_airport_code': dest, 
+    'distance_grp':dist}
+
+    delay = requests.get(flask_url, params=params).json()
+    (delay['arr'], delay['dep']) = (max(float(delay['arr']), 0), max(float(delay['dep']), 0))
+
+    return delay
