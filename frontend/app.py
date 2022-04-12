@@ -402,18 +402,15 @@ def update_deph_plot(time_slider):
     return line_plot, line_title
 
 @app.callback(
-#    Output('deph_pie','children'),
     Output('deph_bar','children'),
     [Input('time_slider', 'value')]
     )
 def update_deph_pie_bar(time_slider):
-    # pie_children = html.Div()
     bar_children = html.Div()      
     if time_slider:
         dep, arr = time_slider
         dep = dep%24
         bar_plot_dep, bar_plot_arr = generate_pie_bar(deph_dep_df, deph_arr_df, [("dep_hour", dep)])
-        # pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
         bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
     return bar_children
 
@@ -451,7 +448,6 @@ def update_arrh_plot(time_slider):
     return line_plot, line_title
 
 @app.callback(
-    # Output('arrh_pie','children'),
     Output('arrh_bar','children'),
     [Input('time_slider', 'value')]
     )
