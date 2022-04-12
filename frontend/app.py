@@ -25,12 +25,20 @@ api_key = '59a5613063b8284d452cd698cbde10d7'
 airport_pairs = pd.read_csv("data/airport_pairs.csv")
 orig_dest_arr_df = pd.read_csv("data/grp_orig_dest_arr.csv")
 orig_dest_dep_df = pd.read_csv("data/grp_orig_dest_dep.csv")
+orig_dest_arr_mon_df = pd.read_csv("data/grp_orig_dest_arr_mon.csv")
+orig_dest_dep_mon_df = pd.read_csv("data/grp_orig_dest_dep_mon.csv")
 carrier_arr_df = pd.read_csv("data/grp_carrier_arr.csv")
 carrier_dep_df = pd.read_csv("data/grp_carrier_dep.csv")
+carrier_arr_mon_df = pd.read_csv("data/grp_carrier_arr_mon.csv")
+carrier_dep_mon_df = pd.read_csv("data/grp_carrier_dep_mon.csv")
 deph_arr_df = pd.read_csv("data/grp_deph_arr.csv")
 deph_dep_df = pd.read_csv("data/grp_deph_dep.csv")
+deph_arr_mon_df = pd.read_csv("data/grp_deph_arr_mon.csv")
+deph_dep_mon_df = pd.read_csv("data/grp_deph_dep_mon.csv")
 arrh_arr_df = pd.read_csv("data/grp_arrh_arr.csv")
 arrh_dep_df = pd.read_csv("data/grp_arrh_dep.csv")
+arrh_arr_mon_df = pd.read_csv("data/grp_arrh_arr_mon.csv")
+arrh_dep_mon_df = pd.read_csv("data/grp_arrh_dep_mon.csv")
 good_example_df = pd.read_csv("data/good_example.csv")
 
 with open("data/options_dict.txt", "r") as file:
@@ -304,7 +312,7 @@ def update_orig_dest_pie(orig, dest):
 def update_orig_dest_hist_delay_type(orig, dest):
     children = html.Div()      
     if all([orig, dest]):
-        hist_dep, hist_arr = update_delay_type(orig_dest_dep_df, orig_dest_arr_df, [("origin_airport_code", orig), ("dest_airport_code", dest)])
+        hist_dep, hist_arr = update_delay_type(orig_dest_dep_mon_df, orig_dest_arr_mon_df, [("origin_airport_code", orig), ("dest_airport_code", dest)])
         children = [dcc.Graph(figure=hist_dep), dcc.Graph(figure=hist_arr),]
     return children                                             
 
@@ -348,7 +356,7 @@ def update_carrier_pie_bar(carrier):
 def update_carrier_hist_delay_type(carrier):
     children = html.Div()         
     if carrier:
-        hist_dep, hist_arr = update_delay_type(carrier_dep_df, carrier_arr_df, 
+        hist_dep, hist_arr = update_delay_type(carrier_dep_mon_df, carrier_arr_mon_df, 
                                              [("u_carrier", carrier)])
         children = [dcc.Graph(figure=hist_dep), dcc.Graph(figure=hist_arr),]
     return children 
@@ -398,7 +406,7 @@ def update_deph_hist_delay_type(time_slider):
     if time_slider:
         dep, arr = time_slider
         dep = dep%24
-        hist_dep, hist_arr = update_delay_type(deph_dep_df, deph_arr_df, [("dep_hour", dep)])
+        hist_dep, hist_arr = update_delay_type(deph_dep_mon_df, deph_arr_mon_df, [("dep_hour", dep)])
         children = [dcc.Graph(figure=hist_dep), dcc.Graph(figure=hist_arr),]
     return children
 
@@ -446,7 +454,7 @@ def update_arrh_hist_delay_type(time_slider):
     if time_slider:
         dep, arr = time_slider
         arr = arr%24
-        hist_dep, hist_arr = update_delay_type(arrh_dep_df, arrh_arr_df, [("arr_hour", arr)])
+        hist_dep, hist_arr = update_delay_type(arrh_dep_mon_df, arrh_arr_mon_df, [("arr_hour", arr)])
         children = [dcc.Graph(figure=hist_dep), dcc.Graph(figure=hist_arr),]
     return children                                             
 @app.callback(
