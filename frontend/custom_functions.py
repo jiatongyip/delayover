@@ -72,24 +72,13 @@ def generate_pie_bar(dep_df, arr_df, col_list):
         arr_df["not delayed"] = 100 - arr_df["delayed"]
 
         try:
-#            pie_plot_dep = px.pie()
             bar_plot_dep = px.bar()
-#            pie_plot_arr = px.pie()
             bar_plot_arr = px.bar()
         except:
-#            pie_plot_dep = px.pie()
             bar_plot_dep = px.bar()
-#            pie_plot_arr = px.pie()
             bar_plot_arr = px.bar()
 
         if not sum(dep_df['count']) == 0:
-            # generate delay proportion for departure in 2012
-            # dep_yr_prop = sum(dep_df['count'] * dep_df['prop']) / sum(dep_df['count']) * 100
-            # pie_plot_dep = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [dep_yr_prop, 100 - dep_yr_prop]}),
-            #     values = 'Proportion', 
-            #     names = 'Status',
-            #     title = "% of delay in 2012 departures",
-            # )
             bar_plot_dep = px.bar(dep_df, x="mon", y=["delayed", "not delayed"], title="% of departure delay",
                             labels = {'mon': "Month", 'value': 'Proportion', 'variable': 'Status'},
                             color_discrete_map={'delayed': '#003676','not delayed': '#FFC90B'})
@@ -99,13 +88,6 @@ def generate_pie_bar(dep_df, arr_df, col_list):
                 legend={'title_text':'Status'}
             )
         if not sum(arr_df['count']) == 0:
-            # generate arrival proportion for departure in 2012        
-            # arr_yr_prop = sum(arr_df['count'] * arr_df['prop']) / sum(arr_df['count']) * 100
-            # pie_plot_arr = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [arr_yr_prop, 100 - arr_yr_prop]}),
-            #     values = 'Proportion', 
-            #     names = 'Status',
-            #     title = "% of delay in 2012 arrivals",
-            # )
             bar_plot_arr = px.bar(arr_df, x="mon", y=["delayed", "not delayed"], title="% of arrival delay",
                             labels = {'mon': "Month", 'value': 'Proportion', 'variable': 'Status'},
                             color_discrete_map={'delayed': '#003676','not delayed': '#FFC90B'})
@@ -114,11 +96,7 @@ def generate_pie_bar(dep_df, arr_df, col_list):
                         "tickvals": list(range(1, 13))},
                 legend={'title_text':'Status'}
             )
-        # pie_plot_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label')
-        # pie_plot_arr.update_traces(textposition = 'outside' , textinfo = 'percent+label')
-        return (
-            # pie_plot_dep, pie_plot_arr, 
-            bar_plot_dep, bar_plot_arr)
+        return (bar_plot_dep, bar_plot_arr)
 
 def update_delay_type(dep_df, arr_df, col_list):
         for (col, val) in col_list:

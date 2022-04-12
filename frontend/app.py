@@ -39,7 +39,8 @@ with open("data/carrier_dict.txt", "r") as file:
     carrier_dict = eval(file.read())
 with open("data/allowable_values.txt", "r") as file:
     allowable_values = eval(file.read())
-
+with open("data/default_values.txt", "r") as file:
+    default_values = eval(file.read())
 
 # app
 app.layout = html.Div(
@@ -69,20 +70,20 @@ app.layout = html.Div(
                                     id='date_picker',
                                     min_date_allowed=date(2013, 1, 1),
                                     max_date_allowed=date(2022, 12, 31),
-                                    initial_visible_month=date(2015, 1, 1),
-                                    date=date(2015, 1, 1),
+                                    initial_visible_month=date(default_values['year'], default_values['month'], default_values['day']),
+                                    date=date(default_values['year'], default_values['month'], default_values['day']),
                                     month_format = "MMMM YYYY",
                                     display_format = "DD-MMM-YYYY"
                                     ),
                                 style={"padding":"10px 20px"}
                             ),
                             html.Div(html.H2("Select Origin:"), style={"padding-right":"5px"}),
-                            html.Div(dcc.Dropdown(id='orig', value = "ATL"), style={"padding":"10px 20px","width":"100px"}),
+                            html.Div(dcc.Dropdown(id='orig', value = default_values['orig']), style={"padding":"10px 20px","width":"100px"}),
                             html.Div(html.H2("Select Destination:"), style={"padding-left":"20px","padding-right":"5px"}),
-                            html.Div(dcc.Dropdown(id='dest', value = "ABE"), style={"padding":"10px 20px","width":"100px"}),
+                            html.Div(dcc.Dropdown(id='dest', value = default_values['dest']), style={"padding":"10px 20px","width":"100px"}),
                             html.Div(html.H2("Select Carrier:"), style={"padding-left":"20px","padding-right":"5px"}),
                             html.Div(dcc.Dropdown(
-                                id='carrier', value = 'AA',
+                                id='carrier', value = default_values['carrier'],
                                 options=options_dict['carrier']),
                                 style={"padding":"10px 20px","width":"200px"})
                             ], style={"display":"flex","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}
@@ -92,7 +93,7 @@ app.layout = html.Div(
                         dcc.RangeSlider(
                             min=0, max=48, step=1,
                             marks={0: '0000', 6: '0600', 12: '1200', 18: '1800', 24: '0000', 30: '0600', 36: '1200', 42: '1800', 48: '0000',},
-                            value=[4, 24], allowCross = False, id='time_slider'
+                            value=default_values['time_slider'], allowCross = False, id='time_slider'
                         ),style={"padding-top":"20px"}),
                         html.Div(id='time_slider_output',style={"font-size":"17px","font-family": 'Poppins,sans-serif',"padding-top":"20px"}),
                     ], style={"font-family": 'Poppins,sans-serif'},
@@ -294,13 +295,11 @@ def update_orig_dest_plot(orig, dest):
     Input('dest', 'value')
 )
 def update_orig_dest_pie(orig, dest):
-#    pie_children = html.Div()
     bar_children = html.Div() 
 
     if all([orig, dest]):
         bar_plot_dep, bar_plot_arr = generate_pie_bar(orig_dest_dep_df, orig_dest_arr_df, 
                                                                               [("origin_airport_code", orig), ("dest_airport_code", dest)])
-#        pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
         bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
     return bar_children
 @app.callback(
@@ -345,7 +344,6 @@ def update_carrier_pie_bar(carrier):
     bar_children = html.Div()         
     if carrier:
         bar_plot_dep, bar_plot_arr = generate_pie_bar(carrier_dep_df, carrier_arr_df, [("u_carrier", carrier)])
-        # pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
         bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
     return bar_children
 
@@ -438,13 +436,11 @@ def update_arrh_plot(time_slider):
     )
 
 def update_arrh_pie_bar(time_slider):
-    # pie_children = html.Div()
     bar_children = html.Div()      
     if time_slider:
         dep, arr = time_slider
         arr = arr%24        
         bar_plot_dep, bar_plot_arr = generate_pie_bar(arrh_dep_df, arrh_arr_df, [("arr_hour", arr)])
-        # pie_children = [dcc.Graph(figure=pie_plot_dep), dcc.Graph(figure=pie_plot_arr),]
         bar_children = [dcc.Graph(figure=bar_plot_dep), dcc.Graph(figure=bar_plot_arr),]
     return bar_children
 @app.callback(
@@ -512,15 +508,43 @@ def output_table(contents, filename):
         else:
             table =  html.Div([
                 html.H3("Predictions for " + filename),
+                html.I("You may select one row to view its historical delay information in the other tabs."),
                 dash_table.DataTable(
+                    id = "output_table_datatable",
                     data = pred_df.to_dict('records'),
                     columns = [{'name': i, 'id': i} for i in pred_df.columns],
                     sort_action="native",
                     page_current= 0,
                     page_size= 10,
+                    row_selectable='single'
                 ),
             ])
     return table
+
+@app.callback(
+    Output('date_picker', 'date'),
+    Output('time_slider', 'value'),
+    Output('orig', 'value'),
+    Output('dest', 'value'),
+    Output('carrier', 'value'),
+    Input('output_table_datatable', 'data'),
+    Input("output_table_datatable", "selected_rows"), 
+    prevent_initial_call=True
+)
+
+def autofill_from_upload(data, selected_row):
+    (datepicker, timeslider, orig, dest, carrier) = (
+        datetime.date(default_values['year'], default_values['month'], default_values['day']).isoformat(),
+        default_values['time_slider'], default_values['orig'], default_values['dest'], default_values['carrier'])
+    if selected_row:
+        selected_row = data[selected_row[0]]
+        year, month, day, orig, dest, carrier, deph, arrh = list(selected_row.values())[:8]
+        datepicker = datetime.date(year, month, day).isoformat()
+        if deph > arrh:
+            arrh += 24
+        timeslider = [deph, arrh]
+    return datepicker, timeslider, orig, dest, carrier
+
 
 @app.callback(
     Output('orig2','options'),
