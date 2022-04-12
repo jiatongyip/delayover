@@ -102,47 +102,46 @@ def generate_pie_bar(dep_df, arr_df, col_list):
         return (bar_plot_dep, bar_plot_arr)
 
 def update_delay_type(dep_df, arr_df, col_list):
+        col_list += [("yr", 2012)]
         for (col, val) in col_list:
             dep_df = dep_df[dep_df[col] == val]
             arr_df = arr_df[arr_df[col] == val]
-
         try: 
             hist_dep = px.histogram()
             hist_arr = px.histogram() 
         except:
             hist_dep = px.histogram()
             hist_arr = px.histogram()         
-        # classify delay types for departure
-        dep_df['Delay'] = pd.cut(
-            x = dep_df['mean'],
-            bins = [-1*math.inf, 15, 45, math.inf],
-            labels = ["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]
-        )
+        dep_df.rename(columns = {'delay_type':'Delay Type'}, inplace = True)
+        arr_df.rename(columns = {'delay_type':'Delay Type'}, inplace = True)
+        dep_df = dep_df.loc[dep_df['Delay Type'] != 'None']
+        arr_df = arr_df.loc[arr_df['Delay Type'] != 'None']
         hist_dep = px.histogram(dep_df, 
-            x='yr', 
-            color='Delay', 
+            x='mon', 
+            y='type_count',
+            color='Delay Type', 
+            nbins=12,
             barmode='group',
-            title = "Number of departure delays over the years",
-            category_orders={"Delay": ["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]},
-            labels = {'yr': 'Year', 'count': 'Count'}
-        )
-        hist_dep.update_layout(yaxis_title="Count")
-        # classify delay types for arrival
-        arr_df['Delay'] = pd.cut(
-            x = arr_df['mean'],
-            bins = [-1*math.inf, 15, 45, math.inf],
-            labels = ["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]
+            title = "For departures",
+            category_orders={"Delay": ["None", "Slight","Moderate", "Severe"]},
+            labels = {'mon': 'Month', 'count': 'Count'},
+            color_discrete_sequence=["#003676", "#FFC90B","#30b9cf"]
         )
         hist_arr = px.histogram(arr_df, 
-            x='yr', 
-            color='Delay', 
+            x='mon', 
+            y='type_count',
+            color='Delay Type', 
+            nbins=12,
             barmode='group',
-            title = "Number of arrival delays over the years",
-            category_orders={"Delay":["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]},
-            labels = {'yr': 'Year', 'count': 'Count'}
+            title = "For arrivals",
+            category_orders={"Delay": ["None", "Slight","Moderate", "Severe"]},
+            labels = {'mon': 'Month', 'count': 'Count'},
+            color_discrete_sequence=["#003676", "#FFC90B","#30b9cf"]
         )
-        hist_dep.update_layout(yaxis_title="Count", xaxis_title="Year", xaxis = dict(tickmode = 'linear'))
-        hist_arr.update_layout(yaxis_title="Count", xaxis_title="Year", xaxis = dict(tickmode = 'linear'))
+        hist_dep.update_layout(yaxis_title="Count", xaxis_title="Month", xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        "tickvals": list(range(1, 13))})
+        hist_arr.update_layout(yaxis_title="Count", xaxis_title="Month", xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        "tickvals": list(range(1, 13))},)
         return hist_dep, hist_arr
 
 def check_date(year, month, day):
