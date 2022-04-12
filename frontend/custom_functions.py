@@ -102,47 +102,51 @@ def generate_pie_bar(dep_df, arr_df, col_list):
         return (bar_plot_dep, bar_plot_arr)
 
 def update_delay_type(dep_df, arr_df, col_list):
+        col_list += [("yr", 2012)]
         for (col, val) in col_list:
             dep_df = dep_df[dep_df[col] == val]
             arr_df = arr_df[arr_df[col] == val]
-
         try: 
             hist_dep = px.histogram()
             hist_arr = px.histogram() 
         except:
             hist_dep = px.histogram()
             hist_arr = px.histogram()         
-        # classify delay types for departure
-        dep_df['Delay'] = pd.cut(
-            x = dep_df['mean'],
-            bins = [-1*math.inf, 15, 45, math.inf],
-            labels = ["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]
-        )
+
+        dep_df = dep_df.loc[dep_df.delay_type != 'None']
+        arr_df = arr_df.loc[arr_df.delay_type != 'None']
         hist_dep = px.histogram(dep_df, 
-            x='yr', 
-            color='Delay', 
+            x='mon',
+            y='type_count',
+            color='delay_type', 
+            nbins=12,
             barmode='group',
-            title = "Number of departure delays over the years",
-            category_orders={"Delay": ["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]},
-            labels = {'yr': 'Year', 'count': 'Count'}
-        )
-        hist_dep.update_layout(yaxis_title="Count")
-        # classify delay types for arrival
-        arr_df['Delay'] = pd.cut(
-            x = arr_df['mean'],
-            bins = [-1*math.inf, 15, 45, math.inf],
-            labels = ["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]
+            title = "For departures",
+            category_orders={"Delay": ["None", "Slight","Moderate", "Severe"]},
+            labels = {'mon': 'Month', 'delay_type':'Delay Type'},
+            color_discrete_sequence=["#003676", "#FFC90B","#30b9cf"]
         )
         hist_arr = px.histogram(arr_df, 
-            x='yr', 
-            color='Delay', 
+            x='mon', 
+            y='type_count',
+            color='delay_type',
+            nbins=12,
             barmode='group',
-            title = "Number of arrival delays over the years",
-            category_orders={"Delay":["No/Slight delay: < 15 min", "Moderate delay: 15 - 45 min", "Severe delay: > 45 min"]},
-            labels = {'yr': 'Year', 'count': 'Count'}
+            title = "For arrivals",
+            category_orders={"Delay": ["None", "Slight","Moderate", "Severe"]},
+            labels = {'mon': 'Month', 'delay_type':'Delay Type'},
+            color_discrete_sequence=["#003676", "#FFC90B","#30b9cf"]
         )
-        hist_dep.update_layout(yaxis_title="Count", xaxis_title="Year", xaxis = dict(tickmode = 'linear'))
-        hist_arr.update_layout(yaxis_title="Count", xaxis_title="Year", xaxis = dict(tickmode = 'linear'))
+        hist_dep.update_layout(yaxis_title="Count", xaxis_title="Month", xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        "tickvals": list(range(1, 13))})
+        hist_dep.update_traces(hovertemplate=
+            hist_dep.data[0].hovertemplate.replace("sum of type_count", "Count")
+        )
+        hist_arr.update_layout(yaxis_title="Count", xaxis_title="Month", xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        "tickvals": list(range(1, 13))},)
+        hist_arr.update_traces(hovertemplate=
+            hist_arr.data[0].hovertemplate.replace("sum of type_count", "Count")
+        )                        
         return hist_dep, hist_arr
 
 def check_date(year, month, day):
@@ -165,8 +169,8 @@ def get_pred_for_upload(year, month, day, orig, dest, carrier, dep, arr, dist):
     return [max(float(delay['dep']), 0), max(float(delay['arr']),0)]
 
 def generate_pred_table(df, airport_pairs, allowable_values):
-    pred_df = pd.DataFrame(columns = ['year', 'month', 'day', 'origin', 'dest', 'carrier', 'dep_hour', 'arr_hour',
-                                    'dep_delay', 'arr_delay'])
+    pred_df = pd.DataFrame(columns = ['Year', 'Month', 'Day', 'Origin Airport', 'Destination Airport', 'Carrier', 'Hour of Departure', 'Hour of Arrival',
+                                    'Predicted delay for departure', 'Predicted delay for arrival'])
     for index, row in df.iterrows():
         # check for additional columns
         if len(row.dropna()) != 8:
@@ -215,22 +219,24 @@ def read_upload_data(contents, filename):
     return df
 
 def get_tab_children(tab):
+    default_style = {"text-align":"center","font-family": 'Poppins,sans-serif',"color":"#001E42"}
     ls = [
         html.H1(id = tab + "_line_title", style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
-        html.P("The plot below shows how the delays vary in 2010, 2011 and 2012.",style={"text-align":"center","padding-top":"10px",
-        "font-family": 'Poppins,sans-serif',"color":"#001E42","font-weight":"500","font-size":"16px"}),
+        html.H2("The plot below shows how the median of each month varies from 2010 to 2012. The 25th to 75th percentile is marked by the coloured bands.", 
+        style={"text-align":"center","font-family": 'Poppins,sans-serif',"color":"#001E42","width":"1000px","margin":"0 auto"}),
         dcc.Graph(id=tab + '_line'),
- 
-        # html.H1(" Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-        # html.Div(id=tab + '_pie', style={"display":"flex","align-items":"center","justify-content":"center"}),
-        html.H1("Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
-        html.P("Let's break it down to observe the patterns in the different months of 2012.",style={"text-align":"center","padding-top":"10px",
-        "font-family": 'Poppins,sans-serif',"color":"#001E42","font-weight":"500","font-weight":"500","font-size":"16px","padding-bottom":"20px"}),
+        # html.P("Click on the legends to show or hide the respective lines.", 
+        # style={"text-align":"center","display":"block"}), 
+        html.H2("Take a look at the plots below to explore the seasonal trends in 2012.", style=default_style),
+        html.H3("Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif',
+        "color":"#001E42","border":"2px solid #000","width":"300px","margin":"0 auto","border-radius":"4px"}),
         html.Div(id=tab + '_bar', style={"display":"flex","align-items":"center","justify-content":"center"}),
-        html.H1("Severity of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+        html.H3("Severity of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif',
+        "color":"#001E42","border":"2px solid #000","width":"300px","margin":"0 auto","border-radius":"4px"}),
         html.Div(id=tab + '_hist_delay', style={"display":"flex","align-items":"center","justify-content":"center"})
         ]
     return ls
+
 
 def predict_delay(year, month, dayofweek, dep, arr, carrier, orig, dest):
     dist = get_distance(airport_pairs, orig, dest)
