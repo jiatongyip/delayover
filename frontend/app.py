@@ -54,12 +54,13 @@ with open("data/default_values.txt", "r") as file:
 app.layout = html.Div(
     [
         html.Div(
-            [html.H1('Flight Delay' ,style={"font-size":"40px","text-align":"center"}),
+            [html.H1('De-Layover!' ,style={"font-size":"40px","text-align":"center"}),
             html.Div([
                 html.Img(src=app.get_asset_url('plane.svg'),style={"padding-right":"30px"}),
-                html.H2("We are here to help you find out the predicted delays for your flight of interest.", style={"width":"650px","font-size":"30px","text-align":"left"}), 
+                html.H2("Fret no more! De-layover is here to help you find out the predicted delays for your flights.", style={"width":"650px","font-size":"30px","text-align":"left"}), 
             ],style={"display":"flex","justify-content":"center","align-items":"center"}),
-            html.P("This dashboard is designed to predict and visualise airplane delays. To have a cleaer picture of flights delays, you can navigate to the other tabs to check for flights delays that are coming from the same origin and destination , same carrier, same departure time and arrival time.",style={"font-size":"14px","width":"640px","margin":"0 auto","padding-left":"90px","padding-bottom":"20px"}),],
+            html.P("De-layover is designed to predict and visualise flight delays. For further understanding, you can navigate to the other tabs to check out past delays with the same origin, destination, carrier, departure or arrival time.",
+            style={"font-size":"14px","width":"640px","margin":"0 auto","padding-left":"90px","padding-bottom":"20px"}),],
             style={"background-color":"#013E87","padding":"10px 0","color":"#fff","font-family": 'Poppins,sans-serif',"text-align":"left"}
         ),
         dcc.Tabs(className='custom-tabs-container', children=[
@@ -262,7 +263,8 @@ def update_output(value):
     dept, arr = value
     dept ="{:02d}".format(dept%24)
     arr = "{:02d}".format(arr%24)
-    return ('Checking for departure time at ' + dept + '00 hours, checking for arrival time at ' + arr + '00 hours.')
+    return ['Departure time selected: ' + dept + '00 hours', html.Br(), 
+    'Arrival time selected: ' + arr + '00 hours']
 
 # callback to change destination dropdown
 @app.callback(
@@ -311,7 +313,6 @@ def update_orig_dest_plot(orig, dest):
     return line_plot, line_title
 
 @app.callback(
-    # Output('orig_dest_pie','children'),
     Output('orig_dest_bar','children'),
     Input('orig', 'value'),
     Input('dest', 'value')
@@ -357,12 +358,10 @@ def update_carrier_plot(carrier):
     return line_plot, line_title
 
 @app.callback(
-    # Output('carrier_pie','children'),
     Output('carrier_bar','children'),
     Input('carrier', 'value'),
     )
 def update_carrier_pie_bar(carrier):
-    # pie_children = html.Div()
     bar_children = html.Div()         
     if carrier:
         bar_plot_dep, bar_plot_arr = generate_pie_bar(carrier_dep_df, carrier_arr_df, [("u_carrier", carrier)])
