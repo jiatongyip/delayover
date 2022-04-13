@@ -71,10 +71,10 @@ def generate_pie_bar(dep_df, arr_df, col_list):
             dep_df = dep_df[dep_df[col] == val]
             arr_df = arr_df[arr_df[col] == val]
 
-        dep_df["Delayed"] = dep_df["prop"] * 100
-        dep_df["Not delayed"] = 100 - dep_df["Delayed"]
-        arr_df["Delayed"] = arr_df["prop"] * 100
-        arr_df["Not delayed"] = 100 - arr_df["Delayed"]
+        for df in [dep_df, arr_df]:
+            df['count_not_zero'] = df['count'] > 0
+            df["Delayed"] = df["prop"] * 100 * df['count_not_zero']
+            df["Not delayed"] = (100 - df["Delayed"]) * df['count_not_zero']
 
         try:
             bar_plot_dep = px.bar()
@@ -141,14 +141,16 @@ def update_delay_type(dep_df, arr_df, col_list):
         )
         hist_dep.update_layout(yaxis_title="Count", xaxis_title="Month", xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         "tickvals": list(range(1, 13))})
-        hist_dep.update_traces(hovertemplate=
-            hist_dep.data[0].hovertemplate.replace("sum of type_count", "Count")
-        )
+        if hist_dep.data:
+            hist_dep.update_traces(hovertemplate=
+                hist_dep.data[0].hovertemplate.replace("sum of type_count", "Count")
+            )
         hist_arr.update_layout(yaxis_title="Count", xaxis_title="Month", xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         "tickvals": list(range(1, 13))},)
-        hist_arr.update_traces(hovertemplate=
-            hist_arr.data[0].hovertemplate.replace("sum of type_count", "Count")
-        )                        
+        if hist_arr.data:
+            hist_arr.update_traces(hovertemplate=
+                hist_arr.data[0].hovertemplate.replace("sum of type_count", "Count")
+            )                        
         return hist_dep, hist_arr
 
 def check_date(year, month, day):
