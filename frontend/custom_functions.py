@@ -8,13 +8,13 @@ import base64
 import io
 from dash import dcc, html
 
-flask_url = 'http://127.0.0.1:5000/prediction'
-
 #reading the data needed
 airport_pairs = pd.read_csv("data/airport_pairs.csv")
 
 with open("data/allowable_values.txt", "r") as file:
     allowable_values = eval(file.read())
+with open("flask_url.txt", "r") as file:
+    flask_url = eval(file.read())['flask_url']
 
 # custom function
 def get_distance(airport_pairs, orig, dest):

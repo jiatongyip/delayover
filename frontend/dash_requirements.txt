@@ -1,0 +1,8 @@
+numpy
+pandas
+joblib
+plotly
+dash
+datetime
+requests
+dash_extensions

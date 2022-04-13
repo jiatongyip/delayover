@@ -1,0 +1,14 @@
+FROM python
+
+WORKDIR /app
+
+COPY frontend/model/flask_requirements.txt requirements.txt
+COPY frontend/model/lm.py lm.py 
+COPY frontend/model/lm_2012_arr.pkl lm_2012_arr.pkl
+COPY frontend/model/lm_2012_dep.pkl lm_2012_dep.pkl
+
+RUN pip3 install -r requirements.txt
+
+ENV FLASK_APP=lm
+
+ENTRYPOINT [ "python", "-u", "-m", "flask", "run", "--host=0.0.0.0"]

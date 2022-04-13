@@ -1,0 +1,16 @@
+FROM python
+
+WORKDIR /app
+
+COPY frontend/dash_requirements.txt requirements.txt
+COPY frontend/app.py app.py
+COPY frontend/custom_functions.py custom_functions.py
+COPY frontend/flask_url.txt flask_url.txt
+COPY frontend/assets/ assets
+COPY frontend/data/ data
+
+RUN pip3 install -r requirements.txt
+
+EXPOSE 8050
+
+ENTRYPOINT [ "python", "app.py"]
