@@ -633,7 +633,8 @@ def airport_table(orig2, dest2):
                     scheduled_departure.append(preprocess_date(flight['departure']['scheduled']))
                     airline_iata.append(flight['airline']['iata'])
 
-
+            if len(departure_iata) == 0:
+                return html.Div(["No data available"])  
             df['Origin'] = departure_iata
             df['Destination'] = arrival_iata
             df['Carrier'] = airline_iata
