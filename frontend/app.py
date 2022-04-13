@@ -53,14 +53,18 @@ with open("data/default_values.txt", "r") as file:
 app.layout = html.Div(
     [
         html.Div(
-            [html.H1('De-Layover!' ,style={"font-size":"40px","text-align":"center"}),
+            [
             html.Div([
                 html.Img(src=app.get_asset_url('plane.svg'),style={"padding-right":"30px"}),
-                html.H2("Fret no more, the delay is over! De-layover is here to help you find out the predicted delays for your flights.", style={"width":"650px","font-size":"30px","text-align":"left"}), 
+                html.H1('De-Layover' ,style={"font-size":"48px","text-align":"center"}),
             ],style={"display":"flex","justify-content":"center","align-items":"center"}),
-            html.P("De-layover is designed to predict and visualise flight delays. For further understanding, you can navigate to the other tabs to check out past delays with the same origin, destination, carrier, departure or arrival time.",
-            style={"font-size":"14px","width":"640px","margin":"0 auto","padding-left":"90px","padding-bottom":"20px"}),],
-            style={"background-color":"#013E87","padding":"10px 0","color":"#fff","font-family": 'Poppins,sans-serif',"text-align":"left"}
+
+            html.Div([
+                 html.H2("Fret no more, the delay is over!", style={"font-size":"36px"}), 
+                  html.P("De-layover is here to help you predict and visualise flight delays. You can navigate to the other tabs to check out past delays with the same origin, destination, carrier, departure or arrival time.",style={"font-size":"16px"}),
+
+            ],style={"width":"600px","margin":"0 auto"}),
+            ],style={"background-color":"#013E87","padding":"10px 0","color":"#fff","font-family": 'Poppins,sans-serif',"text-align":"center"}
         ),
         dcc.Tabs(className='custom-tabs-container', children=[
             dcc.Tab(
@@ -102,16 +106,20 @@ app.layout = html.Div(
                                 id='carrier', value = default_values['carrier'],
                                 options=options_dict['carrier']),
                                 style={"padding":"10px 20px","width":"200px"})
-                            ], style={"display":"flex","padding":"10px 0","justify-content":"center","align-items":"center","font-family": 'Poppins,sans-serif'}
+                            ], style={"display":"flex","padding":"10px 0","justify-content":"center","align-items":"center"}
                         ),
-                        html.H2("Select Departure and Arrival time:",style={"font-family": 'Poppins,sans-serif',"padding-top":"10px","padding-left":"70px"}), 
+                        html.Div([
+                            html.H2("Select Departure and Arrival time:",style={"padding":"0 40px"}), 
+                            html.Div(id='time_slider_output',style={"font-size":"18px","border":"2px solid #003676","border-radius":"4px","padding":"10px 60px"}),     
+
+                        ],style={"display":"flex","align-items":"center","justify-content":'center',"padding":"20px 0"}),
+                        
                         html.Div(
                         dcc.RangeSlider(
                             min=0, max=48, step=1,
                             marks={0: '0000', 6: '0600', 12: '1200', 18: '1800', 24: '0000', 30: '0600', 36: '1200', 42: '1800', 48: '0000',},
                             value=default_values['time_slider'], allowCross = False, id='time_slider'
-                        ),style={"width":"1000px","padding":"20px 50px"}),
-                        html.Div(id='time_slider_output',style={"font-size":"18px","font-family": 'Poppins,sans-serif',"padding-left":"60px"}),
+                        ),style={"width":"1500px","padding":"50px","margin":"0 auto"}),
                     ], style={"font-family": 'Poppins,sans-serif'},
                 )
             ,),
@@ -131,20 +139,22 @@ app.layout = html.Div(
             children=html.Div([
 
                 html.Div([
-                    html.Img(src=app.get_asset_url('pin.svg'),style={"padding-right":"20px","width":"20px"}),
+                    html.Img(src=app.get_asset_url('pin.svg'),style={"padding-right":"20px","width":"25px"}),
                     html.H1("To view predictions for multiple flights",style={"font-size":"30px","text-align":"center"})
-                ],style={"font-family": 'Poppins,sans-serif',"display":"flex","align-items":"center","justify-content":"center"}),
+                ],style={"display":"flex","align-items":"center","justify-content":"center"}),
 
                 html.Div([
                     html.H3("Want to view predictions for multiple flights? Upload your file!"),
                     html.Div([
                         html.Img(src=app.get_asset_url('caution.svg'),style={"padding-right":"10px"}),
-                        html.H3("Only .csv or .xls filetypes are supported."),
+                        html.H3("Only .csv or .xls filetypes are supported.",style={"color":"#F24E1E"}),
 
                     ],style={"display":"flex"}),
                     html.H3("Please ensure that your data is in the correct format and input type. Invalid rows will be ignored."),
+                    html.H3("Interested to know more about one particular row ? You may select that row and visit the other tabs."),
                     html.P("You may refer to an example of a valid csv file below."),
-                    html.P("Please do not include headers in the file. The expected columns in order are:"),
+                    html.P("Please do not include headers in the file. The expected columns in order are:",style={"color":"#F24E1E"}),
+                    
                     html.Ol([
                         html.Li("Year (integer)"),
                         html.Li("Month (integer)",style={"padding-top":"5px"}),
@@ -156,67 +166,66 @@ app.layout = html.Div(
                         html.Li("Scheduled hour of arrival (24 hour)",style={"padding-top":"5px"})
                         ]
                     )
-                ] ,style={"font-family": 'Poppins,sans-serif',"width":"560px","margin":"0 auto",
-                "text-align":"left","padding":"20px 30px","box-shadow": "0px 4px 4px rgba(0, 0, 0, 0.25)",'margin-bottom':"40px"}),
+                ] ,style={"width":"600px","margin":"0 auto",
+                "text-align":"left","padding":"20px 50px","box-shadow": "0px 4px 4px rgba(0, 0, 0, 0.25)",'margin-bottom':"40px"}),
 
                 dcc.Upload(id = "upload_data", 
                 children = html.Div(['Drop or Select a file ',]), 
                 style={'textAlign': 'center',"margin":"0 auto"}, className="drop", multiple = False
                 ),
-                html.Div([html.Br(),]),
-                html.Div(id='output_table'),
-                html.Div(html.H3("A summary for all the uploaded flights:"),style={"font-family": 'Poppins,sans-serif'}),
+                html.Br(),
+                html.Div(id='output_table',style={"margin" :"10px 80px"}),
+                html.H3("Summary for all the uploaded flights:",style={"font-size":"26px","padding-top":"20px"}),
                 html.Div(id = "output_pie", style={"display":"flex","justify-content":"center","align-items":"center"}),
                 # html.Hr(),
                 html.Div([
                     dash_table.DataTable(
                         good_example_df.to_dict('records'),
                         [{'name': i, 'id': i} for i in good_example_df.columns],
-                        style_cell={'textAlign': 'center'},
-                        style_header={ 'background-color': 'white',"text-align":"center"}
+                        style_cell={'textAlign': 'center',"padding":"10px"},
+                        style_header={ 'background-color': 'white',"text-align":"center","padding":"10px"}
                     ),
                     html.Br(),
                     html.Br(),
                     # html.Hr(),  # horizontal line
-                ], style={"padding-top":"40px","width":"500px","margin":"0 auto","text-align":'center',"width":"620px"}),
+                ], style={"padding-top":"40px","margin":"0 auto","text-align":'center',"width":"800px","font-size":"14px"}),
                 html.I("An example of a csv file you may upload"),
                 html.H2("Not sure about the IATA for your carrier? Here's a list of supported carriers.", style={"padding-top":"40px","padding-bottom":"20px","width":"500px","margin":"0 auto"}),
                 html.Div([
                     dash_table.DataTable(
                         options_dict['carrier'],
                         [{'name': 'Carrier name', 'id': "label"}, {'name': 'IATA', 'id': "value"}],
-                        style_cell={'textAlign': 'center'},
+                        style_cell={'textAlign': 'center',"padding":"10px"},
                         style_data_conditional=[{
                             'if': {'row_index': 'odd'},'backgroundColor': 'rgb(241, 241, 241)'
                             }
                         ],
-                        style_header={'fontWeight': 'bold','backgroundColor': 'rgb(241, 241, 241)'},
+                        style_header={'fontWeight': 'bold','backgroundColor': 'rgb(241, 241, 241)',"padding":"10px"},
                         sort_action = 'native'
                     ),
                     html.Hr(),  # horizontal line
-                ], style={"textAlign":"center","align-items":"center","margin":"0 auto","width":"620px"})
+                ], style={"textAlign":"center","align-items":"center","margin":"0 auto","width":"800px","font-size":"14px"})
             ], style={"textAlign":"center","align-items":"center"}),    
             ),
             dcc.Tab(className="custom-tab icon7",selected_className='custom-tab--selected', label='Real Time API', 
             children=html.Div([
                 html.Div([
                     html.H1("Real Time API from AviationStack"),
-                    html.P("Fetching the latest flights from AviationStack's real time API for your easy access. Select your airport of interest below:",style={"text-align":"center","font-family": 'Poppins,sans-serif',"width":"500px","margin":"0 auto"}),
+                    html.P("Fetching the latest flights from AviationStack's real time API for your easy access. Select your airport of interest below: ",style={"text-align":"center","width":"500px","margin":"0 auto"}),
                     ], 
-                style={"text-align":"center","font-family": 'Poppins,sans-serif'}),
+                style={"text-align":"center"}),
                 html.Div([
                     html.Div(html.H2("Select Origin:"), style={"padding-right":"5px"}),
                     html.Div(dcc.Dropdown(id='orig2', value = ""), style={"padding":"10px 20px","width":"100px"}),
                     html.Div(html.H2("Select Destination:"), style={"padding-left":"20px","padding-right":"5px"}),
                     html.Div(dcc.Dropdown(id='dest2', value = ""), style={"padding":"10px 20px","width":"100px"}),
-                ], style={"display":"flex","justify-content":"center","align-items":"center","padding":"10px 0","align-items":"center","font-family": 'Poppins,sans-serif'}),
-                html.Div(id = 'airportTable', style={"text-align":"center","font-size":"18px",
-                "font-family": 'Poppins,sans-serif',"margin":"0 auto","padding":"10px 0"}),
+                ], style={"display":"flex","justify-content":"center","align-items":"center","padding":"10px 0","align-items":"center"}),
+                html.Div(id = 'airportTable', style={"text-align":"center"}),
                 ])
             ),
         ])
     ]
-)
+,style={"font-family": 'Poppins,sans-serif'})
 
 # callback to get prediction
 @app.callback(
@@ -262,7 +271,7 @@ def update_output(value):
     dept, arr = value
     dept ="{:02d}".format(dept%24)
     arr = "{:02d}".format(arr%24)
-    return ['Departure time selected: ' + dept + '00 hours', html.Br(), 
+    return ['Departure time selected: ' + dept + '00 hours', html.Br(),
     'Arrival time selected: ' + arr + '00 hours']
 
 # callback to change destination dropdown
@@ -522,18 +531,31 @@ def output_table(contents, filename):
         if len(pred_df) == 0:
             table = html.Div("No valid rows.")
         else:
+           
             table =  html.Div([
-                html.H3("Showing predictions for " + filename),
-                html.I("Interested to know more about one particular row? You may select that row and visit the other tabs."),
-                dash_table.DataTable(
+             html.H3("Predictions for " + filename, style={"font-size":"26px","padding-top":"20px"}),
+                # html.I("Interested to know more about one particular row? You may select that row and visit the other tabs."),
+                html.Div([
+                    dash_table.DataTable(
                     id = "output_table_datatable",
                     data = pred_df.to_dict('records'),
                     columns = [{'name': i, 'id': i} for i in pred_df.columns],
                     sort_action="native",
                     page_current= 0,
                     page_size= 10,
-                    row_selectable='single'
-                ),
+                    row_selectable='single',
+                    style_header={
+                        'backgroundColor': '#013E87',
+                        'color': '#fff',
+                        'padding':"10px",
+                        "font-size":"14px"
+                        },
+                    style_cell={ 'border':"1px solid #393939","text-align":'center',"font-size":"14px",'padding':"10px"}
+
+                    ),
+
+                ]),
+              
             ])
     return table
 
@@ -634,7 +656,8 @@ def airport_table(orig2, dest2):
                     airline_iata.append(flight['airline']['iata'])
 
             if len(departure_iata) == 0:
-                return html.Div(["No data available"])  
+                return html.Div(["No data available"])
+
             df['Origin'] = departure_iata
             df['Destination'] = arrival_iata
             df['Carrier'] = airline_iata
@@ -652,9 +675,17 @@ def airport_table(orig2, dest2):
                         sort_action="native",
                         page_current= 0,
                         page_size= 10,
-                        row_selectable='single'
+                        row_selectable='single',
+                        style_cell={ 'border':"1px solid #393939","text-align":'center',"font-size":"14px",'padding':"10px"},
+                        style_header={
+                        'backgroundColor': '#013E87',
+                        'color': '#fff',
+                        'padding':"10px",
+                        "font-size":"14px"
+                        },
+                        
+
                     ),
-                    html.Hr(),  # horizontal line
                 ])
             return table
     except:
