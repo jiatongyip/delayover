@@ -7,7 +7,7 @@ import plotly.express as px
 import pandas as pd
 import datetime
 from datetime import date
-from dash.dependencies import Input, Output, State
+#from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import requests
 import plotly.graph_objs as go
@@ -15,10 +15,12 @@ from custom_functions import (get_distance, get_yr_mon_dow, gen_line_plots, gene
 update_delay_type, generate_pred_table, read_upload_data, get_tab_children, predict_delay)
 
 import cufflinks as cf
+from dash_extensions.enrich import Output, DashProxy, Input, MultiplexerTransform, State
 
 flask_url = 'http://127.0.0.1:5000/prediction'
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
-app = Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
+app = DashProxy(transforms=[MultiplexerTransform()], external_stylesheets=external_stylesheets, )
+#app = Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
 api_key = '59a5613063b8284d452cd698cbde10d7'
 
 #reading the data needed
@@ -537,7 +539,7 @@ def output_table(contents, filename):
                 ),
             ])
     return table
-'''
+
 @app.callback(
     Output('date_picker', 'date'),
     Output('time_slider', 'value'),
@@ -562,7 +564,7 @@ def autofill_from_upload(data, selected_row):
         timeslider = [deph, arrh]
     return datepicker, timeslider, orig, dest, carrier
 
-'''
+
 @app.callback(
     Output('orig2','options'),
     Input('orig2','value')
