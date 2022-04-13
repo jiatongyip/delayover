@@ -123,19 +123,19 @@ app.layout = html.Div(
                     ], style={"font-family": 'Poppins,sans-serif'},
                 )
             ,),
-            dcc.Tab(className="custom-tab icon2", selected_className='custom-tab--selected', label='Same airports',  
+            dcc.Tab(className="custom-tab icon2", selected_className='custom-tab--selected', label='Same Airports',  
             children=html.Div(get_tab_children("orig_dest")),
             ),
-            dcc.Tab(className="custom-tab icon3", selected_className='custom-tab--selected', label='Same carrier', 
+            dcc.Tab(className="custom-tab icon3", selected_className='custom-tab--selected', label='Same Carrier', 
             children=html.Div(get_tab_children("carrier"))
             ),
-            dcc.Tab(className="custom-tab icon4", selected_className='custom-tab--selected', label='Same departure time', 
+            dcc.Tab(className="custom-tab icon4", selected_className='custom-tab--selected', label='Same Departure Time', 
             children=html.Div(get_tab_children("deph"))
             ),
-            dcc.Tab(className="custom-tab icon5", selected_className='custom-tab--selected', label='Same arrival time', 
+            dcc.Tab(className="custom-tab icon5", selected_className='custom-tab--selected', label='Same Arrival Time', 
             children=html.Div(get_tab_children("arrh"))
             ),
-            dcc.Tab(className="custom-tab icon6", selected_className='custom-tab--selected', label='Upload file', 
+            dcc.Tab(className="custom-tab icon6", selected_className='custom-tab--selected', label='File Upload', 
             children=html.Div([
 
                 html.Div([
@@ -207,7 +207,7 @@ app.layout = html.Div(
                 ], style={"textAlign":"center","align-items":"center","margin":"0 auto","width":"800px","font-size":"14px"})
             ], style={"textAlign":"center","align-items":"center"}),    
             ),
-            dcc.Tab(className="custom-tab icon7",selected_className='custom-tab--selected', label='Real Time API', 
+            dcc.Tab(className="custom-tab icon7",selected_className='custom-tab--selected', label='Real-Time API', 
             children=html.Div([
                 html.Div([
                     html.H1("Real Time API from AviationStack"),
