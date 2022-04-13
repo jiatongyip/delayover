@@ -2,12 +2,11 @@ import plotly.express as px
 import plotly.graph_objs as go
 import pandas as pd
 from datetime import date
-import math
 import datetime
 import requests
 import base64
 import io
-from dash import Dash, dcc, html, no_update, dash_table
+from dash import dcc, html
 
 flask_url = 'http://127.0.0.1:5000/prediction'
 

@@ -6,7 +6,6 @@ import plotly.express as px
 import pandas as pd
 import datetime
 from datetime import date
-from dash.exceptions import PreventUpdate
 import requests
 #from dash.dependencies import Input, Output, State
 from dash_extensions.enrich import Output, DashProxy, Input, MultiplexerTransform, State
