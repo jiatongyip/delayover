@@ -181,7 +181,7 @@ app.layout = html.Div(
                 html.Div([
                     html.Div([
                         html.Img(src=app.get_asset_url('file2.svg'),style={"padding":"0 30px"}),
-                        html.H3("An example of a csv file you may upload",style={"font-size":"28px"}),
+                        html.H3("An example of a csv file you may upload",style={"font-size":"30px"}),
 
                     ],style={"display":"flex","align-items":"center","justify-content":"center"}),
                     
@@ -196,7 +196,7 @@ app.layout = html.Div(
                     # html.Hr(),  # horizontal line
                 ], style={"padding-top":"40px","margin":"0 auto","text-align":'center',"width":"800px","font-size":"14px","margin-top":"150px"}),
                 
-                html.H2("Not sure about the IATA for your carrier? Here's a list of supported carriers.", style={"font-size":"28px","padding-top":"40px","padding-bottom":"20px","width":"600px","margin":"0 auto"}),
+                html.H2("Not sure about the IATA for your carrier? Here's a list of supported carriers.", style={"font-size":"30px","padding-top":"40px","padding-bottom":"20px","width":"800px","margin":"0 auto"}),
                 html.Div([
                     dash_table.DataTable(
                         options_dict['carrier'],
