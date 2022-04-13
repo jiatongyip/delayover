@@ -13,7 +13,6 @@ from custom_functions import (get_distance, get_yr_mon_dow, gen_line_plots, gene
 update_delay_type, generate_pred_table, read_upload_data, get_tab_children, predict_delay, 
 preprocess_date, generate_predictions)
 
-flask_url = 'http://127.0.0.1:5000/prediction'
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
 app = DashProxy(transforms=[MultiplexerTransform()], external_stylesheets=external_stylesheets,
 suppress_callback_exceptions=True)
@@ -730,4 +729,4 @@ def autofill_from_api(data, selected_row):
     return datepicker, timeslider, orig, dest, carrier
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, host='0.0.0.0')
