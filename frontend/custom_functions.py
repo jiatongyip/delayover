@@ -232,10 +232,10 @@ def get_tab_children(tab):
         # style={"text-align":"center","display":"block"}), 
         html.H2("Take a look at the plots below to explore the seasonal trends in 2012.", style=default_style),
         html.H3("Proportion of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif',
-        "color":"#001E42","border":"2px solid #000","width":"300px","margin":"0 auto","border-radius":"4px"}),
+        "color":"#001E42","border":"2px solid #000","width":"300px","margin":"0 auto","border-radius":"4px","padding":"5px 0"}),
         html.Div(id=tab + '_bar', style={"display":"flex","align-items":"center","justify-content":"center"}),
         html.H3("Severity of delays in 2012", style={"text-align":"center","font-family": 'Poppins,sans-serif',
-        "color":"#001E42","border":"2px solid #000","width":"300px","margin":"0 auto","border-radius":"4px"}),
+        "color":"#001E42","border":"2px solid #000","width":"300px","margin":"0 auto","border-radius":"4px","padding":"5px 0"}),
         html.Div(id=tab + '_hist_delay', style={"display":"flex","align-items":"center","justify-content":"center"})
         ]
     return ls
