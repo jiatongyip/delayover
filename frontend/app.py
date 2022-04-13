@@ -175,7 +175,7 @@ app.layout = html.Div(
                 ),
                 html.Br(),
                 html.Div(id='output_table',style={"margin" :"10px 80px"}),
-                html.H3("Summary for all the uploaded flights:",style={"font-size":"26px","padding-top":"20px"}),
+                html.H3("Summary of the flights you uploaded:",style={"font-size":"26px","padding-top":"20px"}),
                 html.Div(id = "output_pie", style={"display":"flex","justify-content":"center","align-items":"center"}),
                 # html.Hr(),
                 html.Div([
@@ -488,7 +488,7 @@ def update_arrh_hist_delay_type(time_slider):
 )
 
 def output_pie(contents, filename):
-    children = html.Div(["No file uploaded."])      
+    children = html.Div(["No file uploaded yet!"])      
     if contents:
         try:
             df = read_upload_data(contents, filename)
@@ -501,14 +501,14 @@ def output_pie(contents, filename):
             plot_dep = px.pie(pd.DataFrame({"Status": ["Delayed", "Not delayed"], "Proportion": [dep_prop, 100 - dep_prop]}),
                 values = 'Proportion', 
                 names = 'Status',
-                title = "% of departures predicted to delay",
+                title = "For departures",
             )
             plot_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label', marker = {'colors': ['#003676', '#FFC90B']})
             arr_prop = sum(pred_df['Predicted Arrival Delay'] > 0) / len(pred_df) * 100
             plot_arr = px.pie(pd.DataFrame({"Status": ["Delayed", "Not delayed"], "Proportion": [arr_prop, 100 - arr_prop]}),
                 values = 'Proportion', 
                 names = 'Status',
-                title = "% of arrivals predicted to delay",
+                title = "For arrivals",
             )
             plot_arr.update_traces(textposition = 'outside' , textinfo = 'percent+label', marker = {'colors': ['#003676', '#FFC90B']})
             children = html.Div(children = [dcc.Graph(figure=plot_dep), dcc.Graph(figure=plot_arr)],style={"display":"flex","align-items":"center","justify-content":"center"})
@@ -706,6 +706,7 @@ def autofill_from_api(data, selected_row):
     (datepicker, timeslider, orig, dest, carrier) = (
         datetime.date(default_values['year'], default_values['month'], default_values['day']).isoformat(),
         default_values['time_slider'], default_values['orig'], default_values['dest'], default_values['carrier'])
+    print("hi")
     try:
         if selected_row:
             selected_row = data[selected_row[0]]
@@ -715,7 +716,7 @@ def autofill_from_api(data, selected_row):
             datepicker = datetime.date(depTime.year, depTime.month, depTime.day).isoformat()
             deph = depTime.hour
             arrh = arrTime.hour
-            if deph > arr:
+            if deph > arrh:
                 arrh += 24
             timeslider = [deph, arrh]
     except:
