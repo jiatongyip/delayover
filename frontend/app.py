@@ -15,7 +15,8 @@ preprocess_date, generate_predictions)
 
 flask_url = 'http://127.0.0.1:5000/prediction'
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
-app = DashProxy(transforms=[MultiplexerTransform()], external_stylesheets=external_stylesheets, )
+app = DashProxy(transforms=[MultiplexerTransform()], external_stylesheets=external_stylesheets,
+suppress_callback_exceptions=True)
 #app = Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
 api_key = '4ee0ec95bc02b71af0bade456c730005'
 
@@ -215,8 +216,8 @@ app.layout = html.Div(
             dcc.Tab(className="custom-tab icon7",selected_className='custom-tab--selected', label='Real-Time API', 
             children=html.Div([
                 html.Div([
-                    html.H1("Real Time API from AviationStack"),
-                    html.P("Fetching the latest flights from AviationStack's real time API for your easy access. Select your airport of interest below: ",style={"text-align":"center","width":"500px","margin":"0 auto"}),
+                    html.H1("Real-Time API from AviationStack"),
+                    html.P("Fetching the latest flights from AviationStack's real-time API for your easy access. Select your airport of interest below: ",style={"text-align":"center","width":"500px","margin":"0 auto"}),
                     ], 
                 style={"text-align":"center"}),
                 html.Div([
