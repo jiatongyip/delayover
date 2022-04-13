@@ -1,5 +1,4 @@
-from flask import Flask, request, jsonify, send_file, render_template
-from werkzeug.utils import secure_filename
+from flask import Flask, request, jsonify
 import joblib
 import numpy as np
 import pandas as pd
@@ -27,12 +26,3 @@ def make_prediction():
                                        columns=['yr', 'mon', 'day_of_week', 'dep_hour', 'arr_hour', 'u_carrier', 'origin_airport_code', 'dest_airport_code', 'distance_grp'])
     return jsonify({"dep": f"{lm_2012_dep.predict(ct1.transform(new_df))[0]:.3f}",
     "arr": f"{lm_2012_arr.predict(ct2.transform(new_df))[0]:.3f}" })
-
-#curl -F model=@test_upload.txt http://127.0.0.1:5000/upload -v
-@app.route("/upload", methods=["POST"])
-def upload_model():
-    f = request.files['model']
-    #print(f.filename)
-    f.save(f"{secure_filename(f.filename)}")
-    model_list.append(f.filename)
-    return render_template('uploaded.html', fname='test')
