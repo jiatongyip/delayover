@@ -7,7 +7,7 @@ import plotly.express as px
 import pandas as pd
 import datetime
 from datetime import date
-from dash.dependencies import Input, Output, State
+#from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import requests
 import plotly.graph_objs as go
@@ -15,11 +15,13 @@ from custom_functions import (get_distance, get_yr_mon_dow, gen_line_plots, gene
 update_delay_type, generate_pred_table, read_upload_data, get_tab_children, predict_delay)
 
 import cufflinks as cf
+from dash_extensions.enrich import Output, DashProxy, Input, MultiplexerTransform, State
 
 flask_url = 'http://127.0.0.1:5000/prediction'
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
-app = Dash(__name__, external_stylesheets=external_stylesheets)
-api_key = '59a5613063b8284d452cd698cbde10d7'
+app = DashProxy(transforms=[MultiplexerTransform()], external_stylesheets=external_stylesheets, )
+#app = Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
+api_key = '4ee0ec95bc02b71af0bade456c730005'
 
 #reading the data needed
 airport_pairs = pd.read_csv("data/airport_pairs.csv")
@@ -624,30 +626,35 @@ def airport_table(orig2, dest2):
             df = pd.DataFrame()
 
             for flight in api_response['data']:
-                arrival_iata.append(flight['arrival']['iata'])
-                departure_iata.append(flight['departure']['iata'])
-                scheduled_arrival.append(flight['arrival']['scheduled'])
-                scheduled_departure.append(flight['departure']['scheduled'])
-                airline_iata.append(flight['airline']['name'])
                 arr_delay, dep_delay = generate_predictions(flight)
-                arr_delay_lst.append(arr_delay)
-                dep_delay_lst.append(dep_delay)
+                if arr_delay != "No data available" and flight['airline']['iata'] in allowable_values['carrier'] :
+                    arr_delay_lst.append(arr_delay)
+                    dep_delay_lst.append(dep_delay)
+                    arrival_iata.append(flight['arrival']['iata'])
+                    departure_iata.append(flight['departure']['iata'])
+                    scheduled_arrival.append(preprocess_date(flight['arrival']['scheduled']))
+                    scheduled_departure.append(preprocess_date(flight['departure']['scheduled']))
+                    airline_iata.append(flight['airline']['iata'])
 
-            df['Departure'] = departure_iata
-            df['Arrival'] = arrival_iata
-            df['Airline Name'] = airline_iata
-            df['Scheduled Departure'] = scheduled_departure
-            df['Scheduled Arrival'] = scheduled_arrival
-            df['Arrival Delay'] = arr_delay_lst
+
+            df['Origin'] = departure_iata
+            df['Destination'] = arrival_iata
+            df['Carrier'] = airline_iata
+            df['Departure Time'] = scheduled_departure
+            df['Arrival Time'] = scheduled_arrival
             df['Departure Delay'] = dep_delay_lst
+            df['Arrival Delay'] = arr_delay_lst
+            
             
             table =  html.Div([
                     dash_table.DataTable(
+                        id = "api_datatable",
                         data = df.to_dict('records'),
                         columns = [{'name': i, 'id': i} for i in df.columns],
                         sort_action="native",
                         page_current= 0,
                         page_size= 10,
+                        row_selectable='single'
                     ),
                     html.Hr(),  # horizontal line
                 ])
@@ -657,18 +664,53 @@ def airport_table(orig2, dest2):
 
 def generate_predictions(flight):
     try:
-        today = date.today()
-        year, month, dayofweek = today.year, today.month, today.weekday()
-        dep = int(flight['departure']['scheduled'][11:13])
-        arr = int(flight['arrival']['scheduled'][11:13])
+        depTime = datetime.datetime.strptime(flight['departure']['scheduled'], "%Y-%m-%dT%H:%M:%S%z")
+        arrTime = datetime.datetime.strptime(flight['arrival']['scheduled'], "%Y-%m-%dT%H:%M:%S%z")
+        dep = depTime.hour
+        arr = arrTime.hour
+        if dep > arr:
+            arr += 24
         orig, dest, carrier = flight['departure']['iata'], flight['arrival']['iata'], flight['airline']['iata']
-        delay = predict_delay(year, month, dayofweek, dep, arr, carrier, orig, dest)
+        delay = predict_delay(depTime.year, depTime.month, depTime.weekday(), dep, arr, carrier, orig, dest)
         arr_delay = "{:.3f}".format(delay['arr'])
         dep_delay = "{:.3f}".format(delay['dep'])
 
         return(arr_delay, dep_delay)
     except: 
         return ["No data available", "No data available"]
+
+def preprocess_date(date):
+    x = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
+    return(x.strftime('%d/%m/%Y %H:%M'))
+
+
+@app.callback(
+    Output('date_picker', 'date'),
+    Output('time_slider', 'value'),
+    Output('orig', 'value'),
+    Output('dest', 'value'),
+    Output('carrier', 'value'),
+    Input('api_datatable', 'data'),
+    Input("api_datatable", "selected_rows"), 
+    prevent_initial_call=True
+)
+
+def autofill_from_upload2(data, selected_row):
+    (datepicker, timeslider, orig, dest, carrier) = (
+        datetime.date(default_values['year'], default_values['month'], default_values['day']).isoformat(),
+        default_values['time_slider'], default_values['orig'], default_values['dest'], default_values['carrier'])
+    try:
+        if selected_row:
+            selected_row = data[selected_row[0]]
+            orig, dest, carrier, dep, arr = list(selected_row.values())[:5]
+            depTime = datetime.datetime.strptime(dep, '%d/%m/%Y %H:%M')
+            arrTime = datetime.datetime.strptime(arr, '%d/%m/%Y %H:%M')
+            datepicker = datetime.date(depTime.year, depTime.month, depTime.day).isoformat()
+            timeslider = [depTime.hour, arrTime.hour]
+    except:
+        return datepicker, timeslider, orig, dest, carrier
+    return datepicker, timeslider, orig, dest, carrier
+
 
 
 if __name__ == '__main__':

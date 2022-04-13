@@ -21,7 +21,7 @@ flask_url = 'http://127.0.0.1:5000/prediction'
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
 app = DashProxy(transforms=[MultiplexerTransform()], external_stylesheets=external_stylesheets, )
 #app = Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
-api_key = '59a5613063b8284d452cd698cbde10d7'
+api_key = '4ee0ec95bc02b71af0bade456c730005'
 
 #reading the data needed
 airport_pairs = pd.read_csv("data/airport_pairs.csv")
@@ -627,7 +627,7 @@ def airport_table(orig2, dest2):
 
             for flight in api_response['data']:
                 arr_delay, dep_delay = generate_predictions(flight)
-                if arr_delay != "No data available":
+                if arr_delay != "No data available" and flight['airline']['iata'] in allowable_values['carrier'] :
                     arr_delay_lst.append(arr_delay)
                     dep_delay_lst.append(dep_delay)
                     arrival_iata.append(flight['arrival']['iata'])
@@ -664,12 +664,14 @@ def airport_table(orig2, dest2):
 
 def generate_predictions(flight):
     try:
-        today = date.today()
-        year, month, dayofweek = today.year, today.month, today.weekday()
-        dep = int(flight['departure']['scheduled'][11:13])
-        arr = int(flight['arrival']['scheduled'][11:13])
+        depTime = datetime.datetime.strptime(flight['departure']['scheduled'], "%Y-%m-%dT%H:%M:%S%z")
+        arrTime = datetime.datetime.strptime(flight['arrival']['scheduled'], "%Y-%m-%dT%H:%M:%S%z")
+        dep = depTime.hour
+        arr = arrTime.hour
+        if dep > arr:
+            arr += 24
         orig, dest, carrier = flight['departure']['iata'], flight['arrival']['iata'], flight['airline']['iata']
-        delay = predict_delay(year, month, dayofweek, dep, arr, carrier, orig, dest)
+        delay = predict_delay(depTime.year, depTime.month, depTime.weekday(), dep, arr, carrier, orig, dest)
         arr_delay = "{:.3f}".format(delay['arr'])
         dep_delay = "{:.3f}".format(delay['dep'])
 
