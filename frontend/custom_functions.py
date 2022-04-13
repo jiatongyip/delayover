@@ -45,19 +45,19 @@ def gen_line_plots(dep_df, arr_df, col_list):
         fig = go.Figure([
             go.Scatter(name='Departure', x=dep_df.yr_mon, y=dep_df['mean'], mode='lines', line=dict(color='#003676'), 
             legendgroup = "dep"),
-            go.Scatter(name='Departure Quartile 3', x=dep_df.yr_mon, y=dep_df['q75'], mode='lines', marker=dict(color="#444"),
+            go.Scatter(name='Departure 75th Percentile', x=dep_df.yr_mon, y=dep_df['q75'], mode='lines', marker=dict(color="#444"),
                 line=dict(width=0), showlegend=False, legendgroup = "dep"),
-            go.Scatter(name='Departure Quartile 1', x=dep_df.yr_mon, y=dep_df['q25'], marker=dict(color="#444"), line=dict(width=0),
+            go.Scatter(name='Departure 25th Percentile', x=dep_df.yr_mon, y=dep_df['q25'], marker=dict(color="#444"), line=dict(width=0),
                 mode='lines', fillcolor='rgba(201,219,240,0.8)', fill='tonexty', showlegend=False, legendgroup = "dep"),
             go.Scatter(name='Arrival', x=arr_df.yr_mon, y=arr_df['mean'], mode='lines', line=dict(color='#FFC90B'), legendgroup = "arr"),
-            go.Scatter(name='Arrival Quartile 3', x=arr_df.yr_mon, y=arr_df['q75'], mode='lines', marker=dict(color="#444"),
+            go.Scatter(name='Arrival 75th Percentile', x=arr_df.yr_mon, y=arr_df['q75'], mode='lines', marker=dict(color="#444"),
                 line=dict(width=0), showlegend=False, legendgroup = "arr"),
-            go.Scatter(name='Arrival Quartile 1', x=arr_df.yr_mon, y=arr_df['q25'], marker=dict(color="#444"), line=dict(width=0),
+            go.Scatter(name='Arrival 25th Percentile', x=arr_df.yr_mon, y=arr_df['q25'], marker=dict(color="#444"), line=dict(width=0),
                 mode='lines', fillcolor='rgba(252, 219, 101,0.3)', fill='tonexty', showlegend=False, legendgroup = "arr")           
         ])
         fig.update_layout(
             yaxis_title='Delay (mins)',
-            title='Departure and Arrival Delays from 2010 to 2012',
+            title='Departure and Arrival Delays: Median, 25th Percentile, 75th Percentile',
             hovermode='x unified',
             xaxis=dict(tickformat='%b %Y',
             )
@@ -226,7 +226,7 @@ def get_tab_children(tab):
     default_style = {"text-align":"center","font-family": 'Poppins,sans-serif',"color":"#001E42"}
     ls = [
         html.H1(id = tab + "_line_title", style={"text-align":"center","padding-top":"10px","font-family": 'Poppins,sans-serif'}),
-        html.H2("The plot below shows how the median of each month varies from 2010 to 2012. The 25th to 75th percentile is marked by the coloured bands.", 
+        html.H2("The plot below shows how the median delay of each month varies from 2010 to 2012. The 25th to 75th percentile is marked by the coloured bands.", 
         style={"text-align":"center","font-family": 'Poppins,sans-serif',"color":"#001E42","width":"1000px","margin":"0 auto"}),
         dcc.Graph(id=tab + '_line'),
         # html.P("Click on the legends to show or hide the respective lines.", 
