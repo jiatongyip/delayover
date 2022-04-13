@@ -174,10 +174,16 @@ app.layout = html.Div(
                 ),
                 html.Br(),
                 html.Div(id='output_table',style={"margin" :"10px 80px"}),
-                html.H3("Summary of the flights you uploaded:",style={"font-size":"26px","padding-top":"20px"}),
+                html.H3("Summary of the flights you uploaded:",style={"font-size":"24px","padding-top":"20px"}),
                 html.Div(id = "output_pie", style={"display":"flex","justify-content":"center","align-items":"center"}),
                 # html.Hr(),
                 html.Div([
+                    html.Div([
+                        html.Img(src=app.get_asset_url('file2.svg'),style={"padding":"0 30px"}),
+                        html.H3("An example of a csv file you may upload",style={"font-size":"30px"}),
+
+                    ],style={"display":"flex","align-items":"center","justify-content":"center"}),
+                    
                     dash_table.DataTable(
                         good_example_df.to_dict('records'),
                         [{'name': i, 'id': i} for i in good_example_df.columns],
@@ -187,9 +193,9 @@ app.layout = html.Div(
                     html.Br(),
                     html.Br(),
                     # html.Hr(),  # horizontal line
-                ], style={"padding-top":"40px","margin":"0 auto","text-align":'center',"width":"800px","font-size":"14px"}),
-                html.I("An example of a csv file you may upload"),
-                html.H2("Not sure about the IATA for your carrier? Here's a list of supported carriers.", style={"padding-top":"40px","padding-bottom":"20px","width":"500px","margin":"0 auto"}),
+                ], style={"padding-top":"40px","margin":"0 auto","text-align":'center',"width":"800px","font-size":"14px","margin-top":"150px"}),
+                
+                html.H2("Not sure about the IATA for your carrier? Here's a list of supported carriers.", style={"font-size":"30px","padding-top":"40px","padding-bottom":"20px","width":"800px","margin":"0 auto"}),
                 html.Div([
                     dash_table.DataTable(
                         options_dict['carrier'],
