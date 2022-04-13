@@ -1,21 +1,18 @@
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
-from pydoc import classname
 from dash import Dash, dcc, html, no_update, dash_table
 import plotly.express as px
 import pandas as pd
 import datetime
 from datetime import date
-#from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import requests
-import plotly.graph_objs as go
-from custom_functions import (get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, 
-update_delay_type, generate_pred_table, read_upload_data, get_tab_children, predict_delay)
-
-import cufflinks as cf
+#from dash.dependencies import Input, Output, State
 from dash_extensions.enrich import Output, DashProxy, Input, MultiplexerTransform, State
+from custom_functions import (get_distance, get_yr_mon_dow, gen_line_plots, generate_pie_bar, 
+update_delay_type, generate_pred_table, read_upload_data, get_tab_children, predict_delay, 
+preprocess_date, generate_predictions)
 
 flask_url = 'http://127.0.0.1:5000/prediction'
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
@@ -59,7 +56,7 @@ app.layout = html.Div(
             [html.H1('De-Layover!' ,style={"font-size":"40px","text-align":"center"}),
             html.Div([
                 html.Img(src=app.get_asset_url('plane.svg'),style={"padding-right":"30px"}),
-                html.H2("Fret no more! De-layover is here to help you find out the predicted delays for your flights.", style={"width":"650px","font-size":"30px","text-align":"left"}), 
+                html.H2("Fret no more, the delay is over! De-layover is here to help you find out the predicted delays for your flights.", style={"width":"650px","font-size":"30px","text-align":"left"}), 
             ],style={"display":"flex","justify-content":"center","align-items":"center"}),
             html.P("De-layover is designed to predict and visualise flight delays. For further understanding, you can navigate to the other tabs to check out past delays with the same origin, destination, carrier, departure or arrival time.",
             style={"font-size":"14px","width":"640px","margin":"0 auto","padding-left":"90px","padding-bottom":"20px"}),],
@@ -491,15 +488,15 @@ def output_pie(contents, filename):
         pred_df = generate_pred_table(df, airport_pairs, allowable_values)
         if len(pred_df) > 0:
             # generate delay proportion for departure in 2012
-            dep_prop = sum(pred_df['Predicted delay for departure'] > 0) / len(pred_df) * 100
-            plot_dep = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [dep_prop, 100 - dep_prop]}),
+            dep_prop = sum(pred_df['Predicted Departure Delay'] > 0) / len(pred_df) * 100
+            plot_dep = px.pie(pd.DataFrame({"Status": ["Delayed", "Not delayed"], "Proportion": [dep_prop, 100 - dep_prop]}),
                 values = 'Proportion', 
                 names = 'Status',
                 title = "% of departures predicted to delay",
             )
             plot_dep.update_traces(textposition = 'outside' , textinfo = 'percent+label', marker = {'colors': ['#003676', '#FFC90B']})
-            arr_prop = sum(pred_df['Predicted delay for arrival'] > 0) / len(pred_df) * 100
-            plot_arr = px.pie(pd.DataFrame({"Status": ["delayed", "not delayed"], "Proportion": [arr_prop, 100 - arr_prop]}),
+            arr_prop = sum(pred_df['Predicted Arrival Delay'] > 0) / len(pred_df) * 100
+            plot_arr = px.pie(pd.DataFrame({"Status": ["Delayed", "Not delayed"], "Proportion": [arr_prop, 100 - arr_prop]}),
                 values = 'Proportion', 
                 names = 'Status',
                 title = "% of arrivals predicted to delay",
@@ -642,8 +639,8 @@ def airport_table(orig2, dest2):
             df['Carrier'] = airline_iata
             df['Departure Time'] = scheduled_departure
             df['Arrival Time'] = scheduled_arrival
-            df['Departure Delay'] = dep_delay_lst
-            df['Arrival Delay'] = arr_delay_lst
+            df['Predicted Departure Delay'] = dep_delay_lst
+            df['Predicted Arrival Delay'] = arr_delay_lst
             
             
             table =  html.Div([
@@ -662,28 +659,6 @@ def airport_table(orig2, dest2):
     except:
         return html.Div(["No data available"])  
 
-def generate_predictions(flight):
-    try:
-        depTime = datetime.datetime.strptime(flight['departure']['scheduled'], "%Y-%m-%dT%H:%M:%S%z")
-        arrTime = datetime.datetime.strptime(flight['arrival']['scheduled'], "%Y-%m-%dT%H:%M:%S%z")
-        dep = depTime.hour
-        arr = arrTime.hour
-        if dep > arr:
-            arr += 24
-        orig, dest, carrier = flight['departure']['iata'], flight['arrival']['iata'], flight['airline']['iata']
-        delay = predict_delay(depTime.year, depTime.month, depTime.weekday(), dep, arr, carrier, orig, dest)
-        arr_delay = "{:.3f}".format(delay['arr'])
-        dep_delay = "{:.3f}".format(delay['dep'])
-
-        return(arr_delay, dep_delay)
-    except: 
-        return ["No data available", "No data available"]
-
-def preprocess_date(date):
-    x = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
-    return(x.strftime('%d/%m/%Y %H:%M'))
-
-
 @app.callback(
     Output('date_picker', 'date'),
     Output('time_slider', 'value'),
@@ -695,7 +670,7 @@ def preprocess_date(date):
     prevent_initial_call=True
 )
 
-def autofill_from_upload2(data, selected_row):
+def autofill_from_api(data, selected_row):
     (datepicker, timeslider, orig, dest, carrier) = (
         datetime.date(default_values['year'], default_values['month'], default_values['day']).isoformat(),
         default_values['time_slider'], default_values['orig'], default_values['dest'], default_values['carrier'])
@@ -706,12 +681,14 @@ def autofill_from_upload2(data, selected_row):
             depTime = datetime.datetime.strptime(dep, '%d/%m/%Y %H:%M')
             arrTime = datetime.datetime.strptime(arr, '%d/%m/%Y %H:%M')
             datepicker = datetime.date(depTime.year, depTime.month, depTime.day).isoformat()
-            timeslider = [depTime.hour, arrTime.hour]
+            deph = depTime.hour
+            arrh = arrTime.hour
+            if deph > arr:
+                arrh += 24
+            timeslider = [deph, arrh]
     except:
         return datepicker, timeslider, orig, dest, carrier
     return datepicker, timeslider, orig, dest, carrier
-
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)

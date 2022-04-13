@@ -44,23 +44,26 @@ def gen_line_plots(dep_df, arr_df, col_list):
         arr_df['type'] = "arrival"
 
         fig = go.Figure([
-            go.Scatter(name='Departure', x=dep_df.yr_mon, y=dep_df['mean'], mode='lines', line=dict(color='#003676'), legendgroup = "dep"),
-            go.Scatter(name='Dep 75th', x=dep_df.yr_mon, y=dep_df['q75'], mode='lines', marker=dict(color="#444"),
+            go.Scatter(name='Departure', x=dep_df.yr_mon, y=dep_df['mean'], mode='lines', line=dict(color='#003676'), 
+            legendgroup = "dep"),
+            go.Scatter(name='Departure Quartile 3', x=dep_df.yr_mon, y=dep_df['q75'], mode='lines', marker=dict(color="#444"),
                 line=dict(width=0), showlegend=False, legendgroup = "dep"),
-            go.Scatter(name='Dep 25th', x=dep_df.yr_mon, y=dep_df['q25'], marker=dict(color="#444"), line=dict(width=0),
+            go.Scatter(name='Departure Quartile 1', x=dep_df.yr_mon, y=dep_df['q25'], marker=dict(color="#444"), line=dict(width=0),
                 mode='lines', fillcolor='rgba(201,219,240,0.8)', fill='tonexty', showlegend=False, legendgroup = "dep"),
             go.Scatter(name='Arrival', x=arr_df.yr_mon, y=arr_df['mean'], mode='lines', line=dict(color='#FFC90B'), legendgroup = "arr"),
-            go.Scatter(name='Arr 75th', x=arr_df.yr_mon, y=arr_df['q75'], mode='lines', marker=dict(color="#444"),
+            go.Scatter(name='Arrival Quartile 3', x=arr_df.yr_mon, y=arr_df['q75'], mode='lines', marker=dict(color="#444"),
                 line=dict(width=0), showlegend=False, legendgroup = "arr"),
-            go.Scatter(name='Arr 25th', x=arr_df.yr_mon, y=arr_df['q25'], marker=dict(color="#444"), line=dict(width=0),
+            go.Scatter(name='Arrival Quartile 1', x=arr_df.yr_mon, y=arr_df['q25'], marker=dict(color="#444"), line=dict(width=0),
                 mode='lines', fillcolor='rgba(252, 219, 101,0.3)', fill='tonexty', showlegend=False, legendgroup = "arr")           
         ])
         fig.update_layout(
             yaxis_title='Delay (mins)',
             title='Departure and Arrival Delays from 2010 to 2012',
             hovermode='x unified',
-            xaxis=dict(tickformat='%b %Y',)
+            xaxis=dict(tickformat='%b %Y',
+            )
         )
+        fig.update_traces(hoverlabel = dict(namelength = -1))       
         return fig
 
 def generate_pie_bar(dep_df, arr_df, col_list):
@@ -69,10 +72,10 @@ def generate_pie_bar(dep_df, arr_df, col_list):
             dep_df = dep_df[dep_df[col] == val]
             arr_df = arr_df[arr_df[col] == val]
 
-        dep_df["delayed"] = dep_df["prop"] * 100
-        dep_df["not delayed"] = 100 - dep_df["delayed"]
-        arr_df["delayed"] = arr_df["prop"] * 100
-        arr_df["not delayed"] = 100 - arr_df["delayed"]
+        dep_df["Delayed"] = dep_df["prop"] * 100
+        dep_df["Not delayed"] = 100 - dep_df["Delayed"]
+        arr_df["Delayed"] = arr_df["prop"] * 100
+        arr_df["Not delayed"] = 100 - arr_df["Delayed"]
 
         try:
             bar_plot_dep = px.bar()
@@ -82,18 +85,18 @@ def generate_pie_bar(dep_df, arr_df, col_list):
             bar_plot_arr = px.bar()
 
         if not sum(dep_df['count']) == 0:
-            bar_plot_dep = px.bar(dep_df, x="mon", y=["delayed", "not delayed"], title="For departures",
+            bar_plot_dep = px.bar(dep_df, x="mon", y=["Delayed", "Not delayed"], title="For departures",
                             labels = {'mon': "Month", 'value': 'Proportion', 'variable': 'Status'},
-                            color_discrete_map={'delayed': '#003676','not delayed': '#FFC90B'})
+                            color_discrete_map={'Delayed': '#003676','Not delayed': '#FFC90B'})
             bar_plot_dep.update_layout(
                 xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         "tickvals": list(range(1, 13))},
                 legend={'title_text':'Status'}
             )
         if not sum(arr_df['count']) == 0:
-            bar_plot_arr = px.bar(arr_df, x="mon", y=["delayed", "not delayed"], title="For arrivals",
+            bar_plot_arr = px.bar(arr_df, x="mon", y=["Delayed", "Not delayed"], title="For arrivals",
                             labels = {'mon': "Month", 'value': 'Proportion', 'variable': 'Status'},
-                            color_discrete_map={'delayed': '#003676','not delayed': '#FFC90B'})
+                            color_discrete_map={'Delayed': '#003676','Not delayed': '#FFC90B'})
             bar_plot_arr.update_layout(
                 xaxis = {"dtick": 1, "ticktext": ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         "tickvals": list(range(1, 13))},
@@ -169,8 +172,8 @@ def get_pred_for_upload(year, month, day, orig, dest, carrier, dep, arr, dist):
     return [max(float(delay['dep']), 0), max(float(delay['arr']),0)]
 
 def generate_pred_table(df, airport_pairs, allowable_values):
-    pred_df = pd.DataFrame(columns = ['Year', 'Month', 'Day', 'Origin Airport', 'Destination Airport', 'Carrier', 'Hour of Departure', 'Hour of Arrival',
-                                    'Predicted delay for departure', 'Predicted delay for arrival'])
+    pred_df = pd.DataFrame(columns = ['Year', 'Month', 'Day', 'Origin', 'Destination', 'Carrier', 'Hour of Departure', 'Hour of Arrival',
+                                    'Predicted Departure Delay', 'Predicted Arrival Delay'])
     for index, row in df.iterrows():
         # check for additional columns
         if len(row.dropna()) != 8:
@@ -237,7 +240,6 @@ def get_tab_children(tab):
         ]
     return ls
 
-
 def predict_delay(year, month, dayofweek, dep, arr, carrier, orig, dest):
     dist = get_distance(airport_pairs, orig, dest)
     params = {'yr': year, 'mon':month, 'day_of_week': dayofweek, 
@@ -249,3 +251,22 @@ def predict_delay(year, month, dayofweek, dep, arr, carrier, orig, dest):
     (delay['arr'], delay['dep']) = (max(float(delay['arr']), 0), max(float(delay['dep']), 0))
 
     return delay
+
+def preprocess_date(date):
+    x = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
+    return(x.strftime('%d/%m/%Y %H:%M'))
+
+def generate_predictions(flight):
+    try:
+        depTime = datetime.datetime.strptime(flight['departure']['scheduled'], "%Y-%m-%dT%H:%M:%S%z")
+        arrTime = datetime.datetime.strptime(flight['arrival']['scheduled'], "%Y-%m-%dT%H:%M:%S%z")
+        dep = depTime.hour
+        arr = arrTime.hour
+        orig, dest, carrier = flight['departure']['iata'], flight['arrival']['iata'], flight['airline']['iata']
+        delay = predict_delay(depTime.year, depTime.month, depTime.weekday(), dep, arr, carrier, orig, dest)
+        arr_delay = "{:.3f}".format(delay['arr'])
+        dep_delay = "{:.3f}".format(delay['dep'])
+
+        return(arr_delay, dep_delay)
+    except: 
+        return ["No data available", "No data available"]
