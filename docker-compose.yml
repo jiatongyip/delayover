@@ -4,8 +4,6 @@ services:
     build:
       context: .
       dockerfile: flask-dockerfile
-    ports:
-      - "5000:5000"
   dash:
     build:
       context: .
