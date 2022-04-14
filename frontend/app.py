@@ -16,6 +16,9 @@ preprocess_date, generate_predictions)
 external_stylesheets = ["https://fonts.googleapis.com/css2?family=Poppins&display=swap"]
 app = DashProxy(transforms=[MultiplexerTransform()], external_stylesheets=external_stylesheets,
 suppress_callback_exceptions=True)
+app.title = 'De-Layover'
+
+
 #app = Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
 api_key = '4ee0ec95bc02b71af0bade456c730005'
 
@@ -150,7 +153,7 @@ app.layout = html.Div(
 
                     ],style={"display":"flex"}),
                     html.H3("Please ensure that your data is in the correct format and input type. Invalid rows will be ignored."),
-                    html.H3("Interested to know more about one particular row ? You may select that row and visit the other tabs."),
+                    
                     html.P("You may refer to an example of a valid csv file below."),
                     html.P("Please do not include headers in the file. The expected columns in order are:",style={"color":"#F24E1E"}),
                     
@@ -164,9 +167,11 @@ app.layout = html.Div(
                         html.Li("Scheduled hour of departure (24 hour)",style={"padding-top":"5px"}),
                         html.Li("Scheduled hour of arrival (24 hour)",style={"padding-top":"5px"})
                         ]
-                    )
+                    ),
+                    html.H3("Interested to know more about one particular row ? You may select that row and visit the other tabs."),
                 ] ,style={"width":"600px","margin":"0 auto",
                 "text-align":"left","padding":"20px 50px","box-shadow": "0px 4px 4px rgba(0, 0, 0, 0.25)",'margin-bottom':"40px"}),
+               
 
                 dcc.Upload(id = "upload_data", 
                 children = html.Div(['Drop or Select a file ',]), 
@@ -214,11 +219,15 @@ app.layout = html.Div(
             ),
             dcc.Tab(className="custom-tab icon7",selected_className='custom-tab--selected', label='Real-Time API', 
             children=html.Div([
-                html.Div([
-                    html.H1("Real-Time API from AviationStack"),
-                    html.P("Fetching the latest flights from AviationStack's real-time API for your easy access. Select your airport of interest below: ",style={"text-align":"center","width":"500px","margin":"0 auto"}),
+                html.H1("Real-Time API from AviationStack",style={"text-align":"center"}),
+                html.P("Fetching the latest flights from AviationStack's real-time API for your easy access. Select your airport of interest below: ",
+                style={"text-align":"center","width":"500px","margin":"0 auto"}),
+                    html.Div([ 
+                    html.H3("Please choose an origin and a destination.",style={"width":"500px","margin":"0 auto"}),
+                    html.P("Interested to know more about one particular row ? You may select that row and visit the other tabs.",style={"width":"500px","margin":"0 auto","font-weight":"500"}),
                     ], 
-                style={"text-align":"center"}),
+                style={"text-align":"center","box-shadow": "0px 3px 6px rgba(0, 38, 83, 0.25)","padding":"20px 10px","color":"#001E42","width":"600px","margin":"20px auto"}),
+                
                 html.Div([
                     html.Div(html.H2("Select Origin:"), style={"padding-right":"5px"}),
                     html.Div(dcc.Dropdown(id='orig2', value = ""), style={"padding":"10px 20px","width":"100px"}),
