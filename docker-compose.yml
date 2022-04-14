@@ -4,11 +4,9 @@ services:
     build:
       context: .
       dockerfile: flask-dockerfile
-    ports:
-      - "5000:5000"
   dash:
     build:
       context: .
       dockerfile: dash-dockerfile
     ports:
-      - "8050:8050"
+      - "8051:8050"
