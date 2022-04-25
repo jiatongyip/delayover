@@ -1,5 +1,6 @@
-# dsa3101-2120-01-air/frontend
 Building an interactive dashboard "De-layover" that is able to return predictions for flight delay, interactive charts to visualise past trends, as well as easy access to real-time flight information fetched from AviationStack API.
+
+This is part of our NUS DSA3101 project.
 
 ## How to run De-layover with Docker?
 * Make sure the variable flask_url in frontend/flask_url.txt is set to 'http://flask:5000/prediction'.
