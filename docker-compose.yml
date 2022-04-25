@@ -9,4 +9,4 @@ services:
       context: .
       dockerfile: dash-dockerfile
     ports:
-      - "8050:8050"
+      - "8051:8050"
