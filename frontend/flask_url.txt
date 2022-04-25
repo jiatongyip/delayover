@@ -1,1 +1,1 @@
-{"flask_url": "http://127.0.0.1:5000/prediction"}
+{"flask_url": "http://flask:5000/prediction"}
